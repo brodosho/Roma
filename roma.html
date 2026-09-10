@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#17130f">
+<title>Ex Agro — a Roman ascent</title>
+<style>
+:root{
+  --soot:#17130f;
+  --panel:#201a15;
+  --panel2:#261f18;
+  --line:#3a2f24;
+  --ink:#ece2cd;
+  --dim:#9c8a70;
+  --faint:#6d5f4c;
+  --minium:#b0442e;
+  --ochre:#c99b47;
+  --verd:#7d9a83;
+  --blue:#5b7ba0;
+  --r:3px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;height:100%;overflow:hidden}
+body{
+  background:var(--soot);
+  color:var(--ink);
+  font-family:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+  font-size:16px;line-height:1.45;
+  font-variant-numeric:tabular-nums;
+  overscroll-behavior:none;
+  touch-action:manipulation;
+}
+button{font:inherit;color:inherit;background:none;border:none;padding:0;cursor:pointer;font-variant-numeric:tabular-nums}
+#app{display:flex;flex-direction:column;height:100dvh;max-width:560px;margin:0 auto;position:relative}
+
+/* ---------- header ---------- */
+header{
+  padding:calc(env(safe-area-inset-top) + 10px) 14px 8px;
+  border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg,#1d1712,#17130f);
+  position:relative;z-index:5;
+}
+.crown{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+#rank{
+  font-size:15px;letter-spacing:.22em;text-transform:uppercase;color:var(--ochre);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+#rank b{font-weight:600}
+#year{font-size:12px;color:var(--faint);letter-spacing:.08em;white-space:nowrap}
+#chips{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 10px;margin-top:6px}
+.chip{font-size:12.5px;line-height:1.55;height:19px;color:var(--dim);white-space:nowrap;overflow:hidden;
+  display:flex;justify-content:space-between;gap:5px}
+.chip em{font-style:normal;overflow:hidden;text-overflow:ellipsis}
+.chip i{font-style:normal;color:var(--ink);flex:none}
+.chip.full i{color:var(--minium)}
+.chip.bump i{animation:bump .45s ease-out}
+@keyframes bump{0%{color:var(--ochre)}100%{color:var(--ink)}}
+#meters{display:flex;gap:10px;margin-top:7px}
+.meter{flex:1;min-width:0}
+.meter .mlab{display:flex;justify-content:space-between;font-size:11px;color:var(--faint);letter-spacing:.04em}
+.meter .bar{height:3px;background:#2c241c;margin-top:3px;overflow:hidden}
+.meter .bar i{display:block;height:100%;transition:width .4s ease}
+
+/* ---------- view ---------- */
+#view{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 12px 4px}
+h2.sec{
+  font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);
+  font-weight:400;margin:20px 0 8px;display:flex;align-items:center;gap:10px;
+}
+h2.sec:first-child{margin-top:2px}
+h2.sec::after{content:"";flex:1;height:1px;background:var(--line)}
+.note{color:var(--dim);font-size:14px;margin:6px 0 2px;font-style:italic}
+
+/* action buttons */
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.act{
+  position:relative;overflow:hidden;text-align:left;
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--r);
+  padding:11px 12px;min-height:56px;display:flex;flex-direction:column;justify-content:center;
+  transition:background .12s,transform .06s;
+}
+.act:active{transform:scale(.985);background:var(--panel2)}
+.act .an{font-size:15.5px}
+.act .ax{font-size:12px;color:var(--faint);margin-top:2px}
+.act .fill{position:absolute;left:0;bottom:0;height:2px;width:0;background:var(--ochre)}
+.act.cool{color:var(--dim)}
+.act.cool .fill{animation:cd linear forwards;animation-duration:var(--cd)}
+@keyframes cd{from{width:100%}to{width:0}}
+.act.no{opacity:.42}
+
+/* cards */
+.card{
+  display:block;width:100%;text-align:left;
+  background:var(--panel);border:1px solid var(--line);border-left:2px solid var(--line);
+  border-radius:var(--r);padding:10px 12px;margin-bottom:7px;
+  transition:border-color .2s,background .12s,transform .06s;
+}
+.card:active{transform:scale(.99)}
+.card.can{border-left-color:var(--ochre)}
+.card.no{opacity:.5}
+.card.idle{border-left-color:var(--minium)}
+.crow{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.cn{font-size:16px}
+.cc{font-size:13px;color:var(--ochre);white-space:nowrap}
+.cd{font-size:13px;color:var(--dim);margin-top:2px}
+.cp{font-size:12.5px;color:var(--faint);margin-top:4px}
+.cp b{font-weight:400;color:var(--dim)}
+.warn{color:var(--minium)}
+.good{color:var(--verd)}
+
+/* ascend */
+.ascend{
+  border:1px solid var(--ochre);border-radius:var(--r);background:linear-gradient(180deg,#2a2116,#201a13);
+  padding:12px 13px;margin-bottom:14px;
+}
+.ascend h3{margin:0;font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:var(--ochre);font-weight:400}
+.ascend p{margin:6px 0 9px;font-size:14px;color:var(--dim)}
+.reqs{display:flex;flex-direction:column;gap:5px;margin-bottom:10px}
+.req{font-size:13px;color:var(--dim);display:flex;justify-content:space-between;gap:8px}
+.req.ok{color:var(--verd)}
+.big{
+  display:block;width:100%;padding:13px;border:1px solid var(--ochre);border-radius:var(--r);
+  background:var(--ochre);color:#20180d;font-size:15px;letter-spacing:.14em;text-transform:uppercase;
+}
+.big:disabled{background:none;color:var(--faint);border-color:var(--line);letter-spacing:.1em}
+.big.danger{background:var(--minium);border-color:var(--minium);color:#f6e6df}
+
+/* log */
+#log{
+  border-top:1px solid var(--line);background:#141009;
+  padding:6px 13px;height:62px;min-height:62px;max-height:62px;flex:0 0 62px;
+  overflow:hidden;display:flex;flex-direction:column;
+}
+#log div{font-size:13px;line-height:1.55;height:20px;flex:0 0 20px;color:var(--dim);animation:sl .3s ease-out;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:opacity .8s ease}
+#log div.out{opacity:0}
+#log div.hi{color:var(--ochre)}
+#log div.bad{color:var(--minium)}
+#log div.gd{color:var(--verd)}
+@keyframes sl{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* tabs */
+#tabs{display:flex;border-top:1px solid var(--line);background:#1a1611;padding-bottom:env(safe-area-inset-bottom)}
+#tabs button{
+  flex:1;padding:11px 2px 12px;font-size:11.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--faint);border-top:2px solid transparent;margin-top:-1px;
+}
+#tabs button.on{color:var(--ochre);border-top-color:var(--ochre);background:#211a13}
+#tabs button.alert::after{content:"";display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--minium);vertical-align:top;margin-left:3px}
+
+/* float text */
+.float{position:fixed;pointer-events:none;font-size:14px;color:var(--ochre);z-index:60;animation:fl .9s ease-out forwards}
+@keyframes fl{from{opacity:1;transform:translate(-50%,0)}to{opacity:0;transform:translate(-50%,-38px)}}
+
+/* modal */
+#modal{position:fixed;inset:0;z-index:80;display:none;align-items:flex-end;justify-content:center;background:rgba(8,6,4,.72);backdrop-filter:blur(2px)}
+#modal.on{display:flex;animation:fade .2s}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.sheet{
+  width:100%;max-width:560px;background:var(--panel);border-top:2px solid var(--ochre);
+  padding:18px 16px calc(env(safe-area-inset-bottom) + 18px);animation:up .28s cubic-bezier(.2,.8,.3,1);
+  max-height:86dvh;overflow-y:auto;
+}
+@keyframes up{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
+.sheet h3{margin:0 0 8px;font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:var(--ochre);font-weight:400}
+.sheet p{margin:0 0 14px;font-size:15.5px;line-height:1.5}
+.sheet p.sub{color:var(--dim);font-size:14px}
+.choice{
+  display:block;width:100%;text-align:left;background:var(--panel2);border:1px solid var(--line);
+  border-radius:var(--r);padding:12px 13px;margin-bottom:8px;
+}
+.choice:active{background:#2e251c}
+.choice .cn{font-size:15px}
+.choice .ce{font-size:12.5px;color:var(--faint);margin-top:3px}
+.stepper{display:flex;align-items:center;justify-content:space-between;background:var(--panel2);border:1px solid var(--line);padding:8px 12px;margin-bottom:12px;border-radius:var(--r)}
+.stepper button{font-size:22px;width:44px;text-align:center;color:var(--ochre)}
+.stepper span{font-size:15px}
+
+/* banner */
+#banner{position:fixed;inset:0;z-index:90;display:none;background:var(--soot);padding:0 22px;flex-direction:column;justify-content:center;text-align:center}
+#banner.on{display:flex;animation:fade .5s}
+#banner .lat{font-size:11px;letter-spacing:.4em;text-transform:uppercase;color:var(--faint);animation:fade 1s}
+#banner .ttl{font-size:31px;letter-spacing:.14em;text-transform:uppercase;color:var(--ochre);margin:14px 0 18px;line-height:1.2}
+#banner .bd{font-size:16px;color:var(--dim);line-height:1.65;max-width:36ch;margin:0 auto 26px}
+#banner.dead .ttl{color:var(--minium)}
+#banner .big{max-width:280px;margin:0 auto}
+::-webkit-scrollbar{width:0}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="crown"><div id="rank"></div><div id="year"></div></div>
+    <div id="chips"></div>
+    <div id="meters"></div>
+  </header>
+  <div id="view"></div>
+  <div id="log"></div>
+  <div id="tabs"></div>
+</div>
+<div id="modal"><div class="sheet" id="sheet"></div></div>
+<div id="banner"></div>
+
+<script>
+"use strict";
+/* ============================ helpers ============================ */
+const $=s=>document.querySelector(s);
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+function fmt(n){
+  if(n===Infinity)return"∞";
+  n=Math.floor(n*10)/10;
+  const a=Math.abs(n);
+  if(a>=1e9)return(n/1e9).toFixed(2)+"B";
+  if(a>=1e6)return(n/1e6).toFixed(2)+"M";
+  if(a>=1e4)return Math.round(n/100)/10+"k";
+  if(a>=100||Number.isInteger(n))return Math.round(n).toLocaleString("en-US");
+  return n.toFixed(1);
+}
+function buzz(ms){try{navigator.vibrate&&navigator.vibrate(ms)}catch(e){}}
+
+/* ============================ data ============================ */
+const MATS=["grain","timber","olives","flour","bread","oil","marble"];
+const NAMES={grain:"grain",timber:"timber",olives:"olives",flour:"flour",bread:"bread",oil:"oil",marble:"marble",denarii:"denarii"};
+
+const RANKS=[
+ {n:"Peasant",l:"Colonus",
+  next:{btn:"Take the farmstead",req:{r:{denarii:150},b:{farmhand:2,oven:1}},
+   ttl:"Agricola",lat:"Rank II",
+   bd:"The old man across the ditch dies without heirs. You buy his plot with coins you earned by hand. You are still nobody — but now you are nobody with land.",
+   gift:{b:{field:1},r:{denarii:60}}}},
+
+ {n:"Farmer",l:"Agricola",
+  next:{btn:"Open a trading house",req:{r:{denarii:1500},b:{baker:2,presser:1,trader:1}},
+   ttl:"Mercator",lat:"Rank III",
+   bd:"You stop counting sacks and start counting ledgers. Other men's hands do the work; your name is on the amphorae.",
+   gift:{r:{denarii:500}},tab:"trade"}},
+
+ {n:"Merchant",l:"Mercator",
+  next:{btn:"Buy into society",req:{r:{denarii:15000},b:{ship:1,warehouse:1}},
+   ttl:"Patronus",lat:"Rank IV",
+   bd:"Money alone is vulgar. You buy a villa on the Caelian, and men in better cloaks begin, grudgingly, to greet you in the forum.",
+   gift:{dig:40},tab:"rome"}},
+
+ {n:"Patron",l:"Patronus",
+  next:{btn:"Stand for quaestor",req:{dig:200,m:{plebs:40},b:{villa:1}},
+   ttl:"Quaestor",lat:"Cursus Honorum I",
+   bd:"You are elected to the treasury. It is the lowest office in Rome and the first that history bothers to record.",
+   gift:{r:{denarii:8000}}}},
+
+ {n:"Quaestor",l:"Quaestor",
+  next:{btn:"Stand for aedile",req:{dig:600,r:{denarii:60000},m:{senate:45}},
+   ttl:"Aedile",lat:"Cursus Honorum II",
+   bd:"Aediles keep the streets, the markets and the games. The games are what the people remember.",
+   gift:{m:{plebs:8}}}},
+
+ {n:"Aedile",l:"Aedilis",
+  next:{btn:"Stand for praetor",req:{dig:1600,m:{plebs:55,senate:55},b:{arena:1}},
+   ttl:"Praetor",lat:"Cursus Honorum III",
+   bd:"With the praetorship comes imperium: the legal right to command armed men. Rome has just handed you a sword and looked away.",
+   gift:{r:{denarii:20000}},tab:"war"}},
+
+ {n:"Praetor",l:"Praetor",
+  next:{btn:"Stand for consul",req:{dig:4000,m:{senate:65},prov:1},
+   ttl:"Consul",lat:"Cursus Honorum IV",
+   bd:"Two consuls rule Rome for one year. Yours will be talked about for rather longer.",
+   gift:{r:{denarii:60000},m:{senate:5}}}},
+
+ {n:"Consul",l:"Consul",
+  next:{btn:"Take a proconsular command",req:{leg:4,prov:2},
+   ttl:"Proconsul",lat:"Rank VIII",
+   bd:"Your year in office ends. You do not go home. You take the provinces, the legions and the silence of the Senate with you.",
+   gift:{m:{loyalty:10}}}},
+
+ {n:"Proconsul",l:"Proconsul",
+  next:{btn:"March on Rome",march:true,req:{leg:8,prov:5,m:{loyalty:75}},
+   ttl:"Imperator",lat:"Rank IX",
+   bd:"The Senate ordered you to disband your army. You crossed the river instead. The city opened its gates before the first cohort reached the walls.",
+   gift:{},tab:"palace"}},
+
+ {n:"Emperor",l:"Imperator Augustus",next:null}
+];
+
+/* buildings ─ tab, minimum rank, cost, growth, effects */
+const B=[
+ {id:"field",t:"build",n:"Wheat field",r:0,c:{denarii:15},g:1.30,d:"Cleared ground. Room for one more pair of hands.",cap:{grain:25}},
+ {id:"farmhand",t:"build",n:"Farmhand",r:0,c:{denarii:30},g:1.24,d:"Cuts and threshes while you do something else.",prod:{out:{grain:.5}},slot:{field:1},m:"farmhand"},
+ {id:"woodlot",t:"build",n:"Woodlot",r:0,c:{denarii:40},g:1.30,d:"A stand of pine on the hillside.",cap:{timber:40}},
+ {id:"woodcutter",t:"build",n:"Woodcutter",r:0,c:{denarii:50},g:1.24,d:"Fells and splits while you do something else.",prod:{out:{timber:.5}},slot:{woodlot:1},m:"farmhand"},
+ {id:"shed",t:"build",n:"Storage shed",r:0,c:{timber:30},g:1.55,d:"Keeps the rats and the rain out.",cap:{grain:50,timber:40,flour:25,bread:20,olives:25,oil:20}},
+ {id:"handmill",t:"build",n:"Hand quern",r:0,c:{timber:10},max:1,d:"A stone you turn yourself. Lets you grind grain into flour."},
+ {id:"oven",t:"build",n:"Clay oven",r:0,c:{timber:25},max:1,d:"Lets you bake flour into bread."},
+ {id:"mill",t:"build",n:"Water mill",r:0,c:{denarii:90,timber:35},g:1.32,d:"A millstone turned by the stream. Employs one miller.",cap:{flour:40}},
+ {id:"miller",t:"build",n:"Miller",r:0,c:{denarii:110},g:1.22,d:"Grain into flour, all day.",prod:{in:{grain:1.6},out:{flour:.8}},slot:{mill:1},m:"miller"},
+ {id:"bakery",t:"build",n:"Bakery",r:0,c:{denarii:220,timber:50},g:1.32,d:"Ovens and a counter on the street. Employs one baker.",cap:{bread:35}},
+ {id:"baker",t:"build",n:"Baker",r:0,c:{denarii:240},g:1.22,d:"Flour into bread, before dawn.",prod:{in:{flour:.9},out:{bread:.45}},slot:{bakery:1},m:"baker"},
+ {id:"stall",t:"build",n:"Market stall",r:0,c:{denarii:300},g:1.35,d:"A pitch under the portico. Employs one trader.",cap:{bread:20}},
+ {id:"trader",t:"build",n:"Trader",r:0,c:{denarii:320},g:1.22,d:"Sells your bread and hands you the coin.",prod:{in:{bread:.5},out:{denarii:12}},slot:{stall:1},m:"trader"},
+ {id:"grove",t:"build",n:"Olive grove",r:1,c:{denarii:600},g:1.30,d:"Slow to bear, generous forever.",cap:{olives:40}},
+ {id:"cultivator",t:"build",n:"Cultivator",r:1,c:{denarii:420},g:1.22,d:"Beats the trees and gathers the fall.",prod:{out:{olives:.45}},slot:{grove:1},m:"farmhand"},
+ {id:"press",t:"build",n:"Olive press",r:1,c:{denarii:1100,timber:80},g:1.32,d:"A beam press for the first pressing.",cap:{oil:35}},
+ {id:"presser",t:"build",n:"Presser",r:1,c:{denarii:800},g:1.22,d:"Olives into oil.",prod:{in:{olives:.7},out:{oil:.35}},slot:{press:1},m:"presser"},
+ {id:"oilman",t:"build",n:"Oil merchant",r:1,c:{denarii:1400},g:1.24,d:"Sells oil in sealed amphorae. Better margin than bread.",prod:{in:{oil:.3},out:{denarii:40}},slot:{press:2},m:"trader"},
+ {id:"granary",t:"build",n:"Granary",r:1,c:{denarii:1600,timber:120},g:1.5,d:"Stone floors, raised on pillars.",cap:{grain:1200,flour:250,bread:150}},
+ {id:"warehouse",t:"build",n:"Warehouse",r:2,c:{denarii:6000},g:1.5,d:"A bonded store by the river.",cap:{grain:2000,timber:1500,flour:1000,bread:800,olives:800,oil:800,marble:400}},
+
+ /* upgrades — one-off multipliers */
+ {id:"sickle",t:"build",n:"Iron sickle",r:0,c:{denarii:40},max:1,d:"Cuts twice the wheat in the same hour.",mm:{harvest:2}},
+ {id:"axe",t:"build",n:"Felling axe",r:0,c:{denarii:60},max:1,d:"Timber comes twice as fast.",mm:{chop:2}},
+ {id:"plough",t:"build",n:"Ox and plough",r:0,c:{denarii:400,timber:60},max:1,d:"Every farmhand works half again as hard.",mm:{farmhand:1.6}},
+ {id:"wheel",t:"build",n:"Overshot wheel",r:1,c:{denarii:2500},max:1,d:"Millers grind twice as much.",mm:{miller:2}},
+ {id:"brick",t:"build",n:"Brick ovens",r:1,c:{denarii:3000},max:1,d:"Bakers produce 80% more.",mm:{baker:1.8}},
+ {id:"cart",t:"build",n:"Donkey carts",r:1,c:{denarii:2000},max:1,d:"Traders reach further. +60% coin.",mm:{trader:1.6}},
+ {id:"ledger",t:"build",n:"Greek accountant",r:2,c:{denarii:9000},max:1,d:"Every sale returns a third more.",mm:{trader:1.35}},
+ {id:"guild",t:"build",n:"Guild contracts",r:2,c:{denarii:40000},max:1,d:"All production up by half.",mm:{farmhand:1.5,miller:1.5,baker:1.5,presser:1.5}},
+
+ /* trade */
+ {id:"caravan",t:"trade",n:"Mule caravan",r:2,c:{denarii:4000},g:1.4,d:"Each caravan adds 12% to venture profits.",mm:{venture:1.12},stack:true},
+ {id:"barge",t:"trade",n:"River barge",r:2,c:{denarii:9000},g:1.45,d:"Lets one more venture run at the same time.",slotsv:1},
+ {id:"ship",t:"trade",n:"Merchantman",r:2,c:{denarii:15000},g:1.45,d:"Opens the sea routes. One more venture at a time.",slotsv:1},
+ {id:"marines",t:"trade",n:"Hired marines",r:2,c:{denarii:30000},g:1.6,max:3,d:"Cuts the risk of every voyage by a third.",risk:.66},
+
+ /* rome */
+ {id:"villa",t:"rome",n:"Villa on the Caelian",r:3,c:{denarii:15000},max:1,d:"An address the right people recognise.",dig:.5},
+ {id:"client",t:"rome",n:"Client",r:3,c:{denarii:6000},g:1.13,d:"A dependent family. They greet you at dawn and vote as you ask.",dig:.08,inc:120,plebs:.004},
+ {id:"fountain",t:"rome",n:"Public fountain",r:3,c:{denarii:25000},g:1.4,d:"Clean water in a poor quarter, and your name on the basin.",dig:.6,plebs:.02},
+ {id:"bath",t:"rome",n:"Baths",r:3,c:{denarii:90000},g:1.5,d:"Free bathing for the district.",dig:1.6,plebs:.04},
+ {id:"temple",t:"rome",n:"Temple",r:4,c:{denarii:220000,marble:60},g:1.5,d:"Piety, in marble, where everyone can see it.",dig:4,senate:.012},
+ {id:"basilica",t:"rome",n:"Basilica",r:4,c:{denarii:600000,marble:200},g:1.5,d:"Law courts and shade. The Senate approves.",dig:9,senate:.03},
+ {id:"arena",t:"rome",n:"Amphitheatre",r:5,c:{denarii:900000,marble:300},max:1,d:"Your own arena. Makes every games you sponsor twice as loud.",dig:12,plebs:.05,mm:{games:2}},
+
+ /* war */
+ {id:"legion",t:"war",n:"Legion",r:6,c:{denarii:250000,grain:2000},g:1.22,d:"5,000 men. Eats grain and silver whether or not it fights.",leg:1},
+ {id:"centurion",t:"war",n:"Veteran centurions",r:6,c:{denarii:400000},g:1.5,max:6,d:"+25% strength on campaign, each.",mm:{army:1.25},stack:true},
+ {id:"engineer",t:"war",n:"Siege engineers",r:6,c:{denarii:900000},g:1.6,max:4,d:"+20% strength, and fewer men lost in defeat.",mm:{army:1.2},stack:true,save:.85},
+ {id:"cavalry",t:"war",n:"Auxiliary cavalry",r:6,c:{denarii:700000,grain:5000},g:1.5,max:4,d:"+18% strength and faster campaigns.",mm:{army:1.18},stack:true,fast:.9}
+];
+const BID={};B.forEach(x=>BID[x.id]=x);
+
+const ACT=[
+ {id:"harvest",n:"Harvest wheat",cd:1.0,out:{grain:2},m:"harvest",r:0},
+ {id:"chop",n:"Chop timber",cd:1.4,out:{timber:2},m:"chop",r:0},
+ {id:"grind",n:"Grind flour",cd:1.2,in:{grain:4},out:{flour:2},need:"handmill",r:0},
+ {id:"bake",n:"Bake bread",cd:1.2,in:{flour:2},out:{bread:1},need:"oven",r:0},
+ {id:"sellg",n:"Sell grain",cd:1.2,in:{grain:5},out:{denarii:5},m:"sell",r:0},
+ {id:"sell",n:"Sell bread",cd:1.0,in:{bread:1},out:{denarii:12},m:"sell",r:0},
+ {id:"pick",n:"Pick olives",cd:1.4,out:{olives:2},need:"grove",r:0}
+];
+
+const VENT=[
+ {id:"ostia",n:"Ostia run",r:2,t:8,c:{bread:25},out:{denarii:1200},risk:.03,d:"Bread down the road to the port."},
+ {id:"puteoli",n:"Puteoli oil",r:2,t:14,c:{oil:20},out:{denarii:5000},risk:.06,d:"Amphorae of first-press oil."},
+ {id:"sicilia",n:"Sicilian grain",r:2,t:18,c:{denarii:2000},out:{grain:4000},risk:.08,d:"Buy cheap where it grows."},
+ {id:"massilia",n:"Massilia timber",r:2,t:22,c:{denarii:6000},out:{timber:2000,denarii:18000},risk:.14,d:"Gaulish wood and Gaulish wine."},
+ {id:"alex",n:"Alexandria convoy",r:2,t:30,c:{denarii:20000},need:"ship",out:{denarii:150000},risk:.22,d:"Everything Egypt sells, at once."},
+ {id:"athens",n:"Athenian marble",r:3,t:26,c:{denarii:40000},need:"ship",out:{marble:150},risk:.12,d:"Pentelic marble, cut and shipped."}
+];
+
+const PROV=[
+ {id:"sicilia",n:"Sicilia",df:220,r:{grain:8},den:3000,d:"The old granary."},
+ {id:"hispania",n:"Hispania",df:520,r:{},den:20000,d:"Silver mines."},
+ {id:"graecia",n:"Graecia",df:460,r:{marble:6},den:12000,dig:.6,d:"Marble and prestige."},
+ {id:"africa",n:"Africa",df:600,r:{grain:22,oil:2},den:16000,d:"Grain and oil."},
+ {id:"gallia",n:"Gallia",df:900,r:{timber:12},den:24000,d:"Long war, deep forests."},
+ {id:"asia",n:"Asia",df:820,r:{},den:45000,d:"The richest tax farm in the world."},
+ {id:"aegyptus",n:"Aegyptus",df:1100,r:{grain:60},den:60000,d:"The grain fleet. Feeds Rome itself."},
+ {id:"britannia",n:"Britannia",df:1500,r:{},den:12000,dig:1.5,d:"Little profit. Enormous glory."},
+ {id:"germania",n:"Germania",df:2200,r:{timber:30},den:8000,rev:2.2,d:"No one holds it for long."}
+];
+const PID={};PROV.forEach(p=>PID[p.id]=p);
+
+const WON=[
+ {id:"aqua",n:"Aqua Claudia",c:{denarii:3e6,marble:300},d:"Water for every quarter of the city.",e:{plebs:12}},
+ {id:"forum",n:"Imperial forum",c:{denarii:7e6,marble:600},d:"A new heart for Rome, with your name on it.",e:{senate:10,dig:200}},
+ {id:"pantheon",n:"Pantheon",c:{denarii:1.4e7,marble:900},d:"A dome the world will not manage again for a thousand years.",e:{dig:600}},
+ {id:"colosseum",n:"Colosseum",c:{denarii:2.2e7,marble:1200},d:"Fifty thousand seats. The people will forgive a great deal.",e:{plebs:22}},
+ {id:"roads",n:"Roads to the frontiers",c:{denarii:3e7},d:"Every province three weeks closer.",e:{loyalty:12}},
+ {id:"palace",n:"Palatine palace",c:{denarii:4.5e7,marble:1500},d:"Where emperors will live until there are no more emperors.",e:{dig:2000}}
+];
+
+/* ============================ state ============================ */
+let S,M={},CAP={},IDLE={},RATE={},STARVE={},UPD=[],tabsBuilt="",chipEls={},chipSig="";
+function fresh(){
+ return{
+  v:1,t:0,rank:0,r:{grain:0,timber:0,olives:0,flour:0,bread:0,oil:0,marble:0,denarii:0},
+  b:{},seen:{grain:1,timber:1},dig:0,plebs:15,senate:5,loyalty:65,consp:0,
+  prov:{},voy:{},camp:null,won:{},tab:"work",dead:false,victory:false,
+  evT:70,revT:240,unpaid:0,heir:false,purges:0,reign:0,legions:0
+ };
+}
+S=fresh();
+
+/* ============================ derived ============================ */
+function recompute(){
+ M={harvest:1,chop:1,sell:1,farmhand:1,miller:1,baker:1,presser:1,trader:1,venture:1,army:1,games:1};
+ let risk=1,save=1,fast=1,slots=1;
+ for(const d of B){
+  const n=S.b[d.id]||0;if(!n)continue;
+  if(d.mm)for(const k in d.mm)M[k]*=d.stack?Math.pow(d.mm[k],n):d.mm[k];
+  if(d.risk)risk*=Math.pow(d.risk,n);
+  if(d.save)save*=Math.pow(d.save,n);
+  if(d.fast)fast*=Math.pow(d.fast,n);
+  if(d.slotsv)slots+=d.slotsv*n;
+ }
+ M.risk=risk;M.save=save;M.fast=fast;M.slots=slots;
+ /* a workplace that burns down or is sold takes its workers with it */
+ for(const d of B){
+  if(!d.slot)continue;
+  let mx=Infinity;
+  for(const k in d.slot)mx=Math.min(mx,Math.floor((S.b[k]||0)/d.slot[k]));
+  const n=S.b[d.id]||0;
+  if(n>mx){S.b[d.id]=mx;if(S.t>2)log((n-mx)+" "+d.n.toLowerCase()+(n-mx>1?"s have":" has")+" nowhere left to work.","bad")}
+ }
+ CAP={grain:40,timber:60,olives:20,flour:20,bread:15,oil:15,marble:400,denarii:Infinity};
+ for(const d of B){const n=S.b[d.id]||0;if(n&&d.cap)for(const k in d.cap)CAP[k]+=d.cap[k]*n;}
+ /* losing a store must not leave goods sitting above the new limit */
+ for(const k in S.r){if(CAP[k]!==Infinity&&S.r[k]>CAP[k])S.r[k]=CAP[k]}
+ S.legions=S.b.legion||0;
+}
+const provList=()=>Object.keys(S.prov);
+function has(c,mul){for(const k in c){const need=c[k]*(mul||1);if((k==="denarii"?S.r.denarii:S.r[k])<need)return false}return true}
+function pay(c,mul){for(const k in c)S.r[k]-=c[k]*(mul||1)}
+function cost(d){
+ const n=S.b[d.id]||0,o={};
+ for(const k in d.c)o[k]=Math.ceil(d.c[k]*Math.pow(d.g||1,n));
+ return o;
+}
+function costStr(c){return Object.keys(c).map(k=>fmt(c[k])+" "+NAMES[k]).join(" · ")}
+function gain(k,v){
+ if(k==="denarii"){S.r.denarii+=v;S.seen.denarii=1;return}
+ if(k==="dig"){S.dig+=v;return}
+ if(k in S.r){S.r[k]=Math.min(CAP[k],S.r[k]+v);S.seen[k]=1;return}
+ if(k==="plebs"||k==="senate"||k==="loyalty"||k==="consp")S[k]=clamp(S[k]+v,0,100);
+}
+function blocked(d){
+ if(d.max&&(S.b[d.id]||0)>=d.max)return"owned";
+ if(d.slot)for(const k in d.slot){const cap=(S.b[k]||0)*(1/d.slot[k]);if((S.b[d.id]||0)>=Math.floor(cap))return"needs a "+BID[k].n.toLowerCase()}
+ return null;
+}
+
+/* ============================ log ============================ */
+let lastLog=null,lastLogN=1;
+function log(t,c){
+ const L=$("#log");
+ if(lastLog&&lastLog.txt===t&&lastLog.el.parentNode===L){
+  lastLogN++;lastLog.el.textContent=t+" ×"+lastLogN;lastLog.el.classList.remove("out");
+  clearTimeout(lastLog.timer);lastLog.timer=setTimeout(()=>fadeLog(lastLog.el),16000);
+  return;
+ }
+ const d=document.createElement("div");
+ d.textContent=t;if(c)d.className=c;
+ L.insertBefore(d,L.firstChild);
+ while(L.children.length>3)L.removeChild(L.children[L.children.length-1]);
+ lastLogN=1;
+ lastLog={txt:t,el:d,timer:setTimeout(()=>fadeLog(d),16000)};
+}
+function fadeLog(d){if(!d)return;d.classList.add("out");setTimeout(()=>{if(d.remove)d.remove()},900)}
+function floatUp(e,txt,col){
+ const s=document.createElement("div");s.className="float";s.textContent=txt;
+ if(col)s.style.color=col;
+ const r=e.getBoundingClientRect();
+ s.style.left=(r.left+r.width/2)+"px";s.style.top=(r.top+8)+"px";
+ document.body.appendChild(s);setTimeout(()=>s.remove(),900);
+}
+
+/* ============================ tick ============================ */
+function produce(dt){
+ IDLE={};RATE={};
+ for(const d of B){
+  const n=S.b[d.id]||0;if(!n||!d.prod)continue;
+  const amt=n*(d.m?M[d.m]:1)*dt;
+  let f=1,lack=null;
+  if(d.prod.in)for(const k in d.prod.in){
+   const need=d.prod.in[k]*amt;if(need<=0)continue;
+   const have=Math.max(0,S.r[k]);
+   if(have<need){const ff=have/need;if(ff<f){f=ff;lack="short of "+NAMES[k]}}
+  }
+  for(const k in d.prod.out){
+   if(k==="denarii")continue;
+   const g=d.prod.out[k]*amt;if(g<=0)continue;
+   const space=Math.max(0,CAP[k]-S.r[k]);
+   if(space<g){const ff=space/g;if(ff<f){f=ff;lack=NAMES[k]+" stores full"}}
+  }
+  f=clamp(f,0,1);RATE[d.id]=f;
+  if(f<.97&&lack){IDLE[d.id]=lack;starving(d,f,lack,dt)}
+  else STARVE[d.id]=0;
+  if(f<=0)continue;
+  if(d.prod.in)for(const k in d.prod.in)S.r[k]=Math.max(0,S.r[k]-d.prod.in[k]*amt*f);
+  for(const k in d.prod.out)gain(k,d.prod.out[k]*amt*f);
+ }
+}
+/* one gentle nudge when a worker has been stalled for a while, never a stream of them */
+function starving(d,f,lack,dt){
+ if(f>.05)return;
+ STARVE[d.id]=(STARVE[d.id]||0)+dt;
+ if(STARVE[d.id]<10)return;
+ STARVE[d.id]=-40;
+ const src=d.prod.in?Object.keys(d.prod.in)[0]:null;
+ const fix=src?({grain:"farmhands",flour:"millers",bread:"bakers",olives:"cultivators",oil:"pressers"})[src]:null;
+ log("Your "+d.n.toLowerCase()+"s are idle — "+lack+(fix?". Hire more "+fix+".":". Build more storage."),"bad");
+}
+function tick(dt){
+ if(S.dead)return;
+ S.t+=dt;
+ produce(dt);
+ /* passive from rome */
+ let dig=0,inc=0,pl=0,sen=0;
+ for(const d of B){const n=S.b[d.id]||0;if(!n)continue;
+  if(d.dig)dig+=d.dig*n;if(d.inc)inc+=d.inc*n;if(d.plebs)pl+=d.plebs*n;if(d.senate)sen+=d.senate*n;}
+ S.dig=Math.max(0,S.dig+dig*dt);if(inc)gain("denarii",inc*dt);
+ /* provinces */
+ for(const id of provList()){
+  const p=PID[id];
+  for(const k in p.r)gain(k,p.r[k]*dt);
+  gain("denarii",p.den*dt);if(p.dig)S.dig+=p.dig*dt;
+ }
+ /* legions upkeep */
+ if(S.legions>0){
+  const dn=S.legions*800*dt,gr=S.legions*3*dt;
+  if(S.r.denarii>=dn&&S.r.grain>=gr){S.r.denarii-=dn;S.r.grain-=gr;S.unpaid=0;S.loyalty=clamp(S.loyalty+.25*dt,0,100)}
+  else{S.r.denarii=Math.max(0,S.r.denarii-dn);S.r.grain=Math.max(0,S.r.grain-gr);
+   S.loyalty=clamp(S.loyalty-2.2*dt,0,100);S.unpaid+=dt;
+   if(S.unpaid>6){S.unpaid=0;log("The legions have not been paid.","bad")}}
+ }
+ /* social drift */
+ if(S.rank>=3){
+  S.plebs=clamp(S.plebs+(pl-.05)*dt,0,100);
+  S.senate=clamp(S.senate+(sen-.03)*dt,0,100);
+ }
+ /* voyages */
+ for(const id in S.voy){const v=S.voy[id];v.t-=dt;if(v.t<=0)resolveVoy(id)}
+ /* campaign */
+ if(S.camp){S.camp.t-=dt;if(S.camp.t<=0)resolveCamp()}
+ /* emperor */
+ if(S.rank>=9){
+  S.reign+=dt;
+  const heat=(55-S.senate)*.010+(45-S.plebs)*.008+(70-S.loyalty)*.006+S.purges*.06;
+  S.consp=clamp(S.consp+Math.max(-.35,heat)*dt,0,100);
+  if(Math.random()<Math.pow(S.consp/100,3)*.02*dt)plot();
+ }
+ /* events */
+ if(S.rank>=1&&!$("#modal").classList.contains("on")){
+  S.evT-=dt;
+  if(S.evT<=0){S.evT=rnd(55,95);doEvent()}
+ }
+ if(S.rank>=7&&provList().length){
+  S.revT-=dt;
+  if(S.revT<=0){S.revT=rnd(150,260);maybeRevolt()}
+ }
+}
+
+/* ============================ ventures ============================ */
+function startVoy(v){
+ if(S.voy[v.id])return;
+ if(Object.keys(S.voy).length>=M.slots){log("No more ships or crews free.","bad");return}
+ if(!has(v.c)){log("You cannot cover that cargo.","bad");return}
+ pay(v.c);
+ S.voy[v.id]={t:v.t*M.fast,tot:v.t*M.fast};
+ log("The "+v.n.toLowerCase()+" sets out.");
+ render();
+}
+function resolveVoy(id){
+ const v=VENT.find(x=>x.id===id);delete S.voy[id];
+ if(Math.random()<v.risk*M.risk){
+  log(pick(["Pirates took the "+v.n.toLowerCase()+".","Storms off the coast. Cargo lost.","The cargo never arrived. No one will say why."]),"bad");
+ }else{
+  const mul=M.venture;let str=[];
+  for(const k in v.out){gain(k,v.out[k]*mul);str.push(fmt(v.out[k]*mul)+" "+NAMES[k])}
+  log(v.n+" returns: "+str.join(", "),"gd");
+ }
+ render();
+}
+
+/* ============================ war ============================ */
+function armyStrength(n){return n*70*M.army*(.65+S.loyalty/145)}
+function odds(n,p){const s=armyStrength(n);return clamp(s/(s+p.df),.05,.96)}
+function startCamp(p,n){
+ S.camp={p:p.id,n:n,t:22+p.df/45*M.fast,tot:22+p.df/45*M.fast,o:odds(n,p)};
+ log(fmt(n)+" legions march for "+p.n+".","hi");
+ closeModal();render();
+}
+function resolveCamp(){
+ const c=S.camp,p=PID[c.p];S.camp=null;
+ if(Math.random()<c.o){
+  S.prov[p.id]=1;
+  const lost=Math.random()<.35?1:0;
+  if(lost){S.b.legion=Math.max(0,(S.b.legion||0)-1);recompute()}
+  S.dig+=250;S.plebs=clamp(S.plebs+7,0,100);S.senate=clamp(S.senate+3,0,100);S.loyalty=clamp(S.loyalty+6,0,100);
+  log(p.n+" is yours."+(lost?" One legion was destroyed taking it.":""),"gd");
+ }else{
+  const lost=Math.max(1,Math.round(c.n*rnd(.3,.6)*M.save));
+  S.b.legion=Math.max(0,(S.b.legion||0)-lost);recompute();
+  S.plebs=clamp(S.plebs-8,0,100);S.senate=clamp(S.senate-7,0,100);S.loyalty=clamp(S.loyalty-12,0,100);
+  S.dig=Math.max(0,S.dig-300);
+  log("Defeat in "+p.n+". "+lost+" legion"+(lost>1?"s":"")+" lost.","bad");
+ }
+ render();
+}
+function maybeRevolt(){
+ const ps=provList();if(!ps.length)return;
+ const risk=.20+(60-S.loyalty)*.004+(S.rank>=9?(50-S.plebs)*.003:0);
+ if(Math.random()>clamp(risk,.05,.7))return;
+ const id=pick(ps),p=PID[id];
+ modal({
+  h:"Revolt",
+  p:p.n+" has risen. Tax collectors are dead in the streets and the garrison has withdrawn to the coast.",
+  ch:[
+   {n:"Send the legions",e:"Risk "+Math.round((1-odds(Math.max(1,S.legions),{df:p.df*.6}))*100)+"% · loses men",f:()=>{
+     if(odds(Math.max(1,S.legions),{df:p.df*.6})>Math.random()){
+      log(p.n+" is pacified.","gd");S.dig+=80;S.plebs=clamp(S.plebs+3,0,100);
+     }else{
+      S.b.legion=Math.max(0,(S.b.legion||0)-1);delete S.prov[id];recompute();
+      log("The relief force was destroyed. "+p.n+" is lost.","bad");S.senate=clamp(S.senate-8,0,100);
+     }}},
+   {n:"Buy them off",e:"−"+fmt(p.den*400)+" denarii",f:()=>{
+     if(S.r.denarii>=p.den*400){S.r.denarii-=p.den*400;log(p.n+" is quiet again. Expensively.");S.senate=clamp(S.senate-3,0,100)}
+     else{delete S.prov[id];log("You had nothing to give. "+p.n+" is lost.","bad")}}},
+   {n:"Let it go",e:"Lose the province",f:()=>{delete S.prov[id];S.dig=Math.max(0,S.dig-200);S.senate=clamp(S.senate-6,0,100);log(p.n+" is no longer yours.","bad")}}
+  ]
+ });
+}
+
+/* ============================ emperor ============================ */
+function plot(){
+ const survive=clamp(.25+S.loyalty/220+(S.heir?.1:0),0,.9);
+ if(Math.random()<survive){
+  S.consp=clamp(S.consp-45,0,100);S.senate=clamp(S.senate-8,0,100);
+  modal({h:"A plot uncovered",p:"A freedman brings you names before the knives do. The trials last a week. The Senate watches you very carefully now.",
+   ch:[{n:"Continue",e:"",f:()=>{}}]});
+  log("A conspiracy was uncovered in time.","hi");
+ }else die("assassinated");
+}
+function die(how){
+ S.dead=true;
+ const yr=year();
+ const txt=how==="assassinated"
+  ? "Twenty-three wounds on the Senate floor. The men who did it were men you had pardoned, promoted, and dined with."
+  : "Your army broke before the walls of Rome. The Senate had you killed on the road south, and voted your memory condemned.";
+ banner("Anno "+yr,"Sic Semper",txt+"\n\nYou began with one field and a clay oven. You ended holding "+provList().length+" provinces. Rome will keep the roads you built and forget the rest.",
+  {label:"Begin again as nobody",f:()=>{S=fresh();recompute();$("#banner").classList.remove("on","dead");log("A field. An oven. Nothing else.");render();save()}},true);
+}
+function checkVictory(){
+ if(S.victory)return;
+ if(WON.every(w=>S.won[w.id])){
+  S.victory=true;
+  banner("Roma Aeterna","Consummatum","The last scaffolding comes down off the palace. From the top step you can see the aqueduct, the forum, the arena — and, if you know where to look, a small field beyond the ninth milestone where a boy once cut wheat by hand.\n\nRome answers to you. Keep it if you can.",
+   {label:"Reign on",f:()=>{$("#banner").classList.remove("on");render()}});
+ }
+}
+
+/* ============================ events ============================ */
+const EVENTS=[
+ {r:[1,3],w:3,h:"Drought",p:"Three months without rain. The wheat is light in the ear.",
+  ch:[{n:"Endure it",e:"Lose a third of your grain",f:()=>{S.r.grain*=.66;log("The stores are thin.","bad")}},
+      {n:"Buy grain in the market",e:"−1,200 denarii",f:()=>{if(S.r.denarii>=1200){S.r.denarii-=1200;log("You bought your way through the dry year.")}else{S.r.grain*=.66;log("You could not afford it.","bad")}}}]},
+ {r:[1,4],w:3,h:"A neighbour's plot",p:"The widow next door is selling. The land is good and she is in a hurry.",
+  ch:[{n:"Buy it",e:"−2,000 denarii · +1 field, +1 grove",f:()=>{if(S.r.denarii>=2000){S.r.denarii-=2000;S.b.field=(S.b.field||0)+1;S.b.grove=(S.b.grove||0)+1;recompute();log("Two more plots under your name.","gd")}else log("You did not have the coin.","bad")}},
+      {n:"Let it pass",e:"",f:()=>{}}]},
+ {r:[1,5],w:2,h:"Fire in the workshop",p:"An oven cracked in the night and took the roof with it.",
+  ch:[{n:"Rebuild at once",e:"−15% of your denarii",f:()=>{S.r.denarii*=.85;log("Rebuilt within the week.")}},
+      {n:"Work around it",e:"Lose a bakery",f:()=>{S.b.bakery=Math.max(0,(S.b.bakery||0)-1);recompute();log("One bakery gone.","bad")}}]},
+ {r:[2,9],w:3,h:"A rival undercuts you",p:"A freedman with Egyptian backers is selling below your price in your own street.",
+  ch:[{n:"Undercut him back",e:"−20% denarii, he folds",f:()=>{S.r.denarii*=.8;S.dig+=60;log("He is out of the market by winter.","gd")}},
+      {n:"Buy his stock",e:"−8,000 denarii, +goods",f:()=>{if(S.r.denarii>=8000){S.r.denarii-=8000;gain("bread",400);gain("oil",300);log("His stock is now yours.","gd")}else log("You could not raise it.","bad")}},
+      {n:"Ignore him",e:"−dignitas",f:()=>{S.dig=Math.max(0,S.dig-40);log("People notice that you did nothing.")}}]},
+ {r:[3,9],w:3,h:"Slander in the forum",p:"A senator's client is telling everyone your grandfather was a slave.",
+  ch:[{n:"Sponsor games",e:"−30,000 denarii · +plebs",f:()=>{if(S.r.denarii>=30000){S.r.denarii-=30000;S.plebs=clamp(S.plebs+9,0,100);S.dig+=120;log("The crowd has already forgotten the story.","gd")}else{S.dig=Math.max(0,S.dig-100);log("You could not answer it.","bad")}}},
+      {n:"Sue him",e:"+senate, −plebs",f:()=>{S.senate=clamp(S.senate+5,0,100);S.plebs=clamp(S.plebs-4,0,100);log("The courts side with you. The street does not.")}},
+      {n:"Say nothing",e:"−dignitas",f:()=>{S.dig=Math.max(0,S.dig-180);log("The story spreads.","bad")}}]},
+ {r:[4,9],w:3,h:"The grain price rises",p:"Speculators are holding back the harvest. Bread has doubled in a month and the Subura is loud about it.",
+  ch:[{n:"Subsidise the dole",e:"−80,000 denarii · +plebs",f:()=>{if(S.r.denarii>=80000){S.r.denarii-=80000;S.plebs=clamp(S.plebs+12,0,100);log("Cheap bread, and your name on it.","gd")}else{S.plebs=clamp(S.plebs-8,0,100);log("You had nothing to give.","bad")}}},
+      {n:"Let the market decide",e:"+coin, −plebs",f:()=>{gain("denarii",60000);S.plebs=clamp(S.plebs-10,0,100);S.senate=clamp(S.senate+4,0,100);log("You profited. The city noticed.")}},
+      {n:"Seize the hoards",e:"+grain, −senate",f:()=>{gain("grain",8000);S.plebs=clamp(S.plebs+7,0,100);S.senate=clamp(S.senate-12,0,100);log("The equestrians will remember this.","bad")}}]},
+ {r:[4,9],w:2,h:"A prosecution",p:"An ambitious young man accuses you of extortion in your province. He has documents.",
+  ch:[{n:"Buy the jury",e:"−25% denarii",f:()=>{S.r.denarii*=.75;log("Acquitted, unanimously.")}},
+      {n:"Defend yourself",e:"Uncertain",f:()=>{if(Math.random()<clamp(.35+S.senate/180,0,.9)){S.dig+=300;S.senate=clamp(S.senate+6,0,100);log("You spoke for four hours and won.","gd")}else{S.dig=Math.max(0,S.dig-500);S.r.denarii*=.6;log("Convicted. A heavy fine.","bad")}}},
+      {n:"Have him silenced",e:"−senate, −conscience",f:()=>{S.senate=clamp(S.senate-10,0,100);S.consp=clamp(S.consp+6,0,100);log("He is found in the Tiber.","bad")}}]},
+ {r:[6,9],w:3,h:"Mutiny",p:"The Ninth refuses to march. They want their discharge bonus and they want it now.",
+  ch:[{n:"Pay the donative",e:"−200,000 denarii · +loyalty",f:()=>{if(S.r.denarii>=200000){S.r.denarii-=200000;S.loyalty=clamp(S.loyalty+18,0,100);log("They cheer your name again.","gd")}else{S.loyalty=clamp(S.loyalty-20,0,100);log("You had nothing to pay them with.","bad")}}},
+      {n:"Decimate them",e:"−loyalty now, discipline later",f:()=>{S.loyalty=clamp(S.loyalty-6,0,100);S.dig+=100;S.plebs=clamp(S.plebs-4,0,100);log("Every tenth man clubbed to death by his friends. No one refuses again.","bad")}},
+      {n:"Address them yourself",e:"Uncertain",f:()=>{if(Math.random()<clamp(.3+S.dig/6000,0,.85)){S.loyalty=clamp(S.loyalty+22,0,100);log("You called them citizens instead of soldiers. They begged to be taken back.","gd")}else{S.b.legion=Math.max(0,(S.b.legion||0)-1);recompute();log("A legion walks away from you.","bad")}}}]},
+ {r:[6,9],w:2,h:"Barbarian raid",p:"A war band has crossed the frontier and is burning farms in your richest province.",
+  ch:[{n:"Intercept them",e:"Risk one legion",f:()=>{if(Math.random()<clamp(.5+S.legions*.05,0,.92)){S.dig+=150;S.plebs=clamp(S.plebs+5,0,100);log("Caught them at the ford. None returned home.","gd")}else{S.b.legion=Math.max(0,(S.b.legion||0)-1);recompute();log("Ambushed in the woods. A legion is gone.","bad")}}},
+      {n:"Pay them to leave",e:"−300,000 denarii",f:()=>{if(S.r.denarii>=300000){S.r.denarii-=300000;S.senate=clamp(S.senate-6,0,100);log("Bought off. The Senate calls it cowardice.")}else{gain("grain",-2000);log("They took what they wanted.","bad")}}}]},
+ {r:[9,9],w:3,h:"The Senate objects",p:"A consul has read out a motion criticising your treatment of the courts. The chamber was silent, but nobody stopped him.",
+  ch:[{n:"Attend and answer",e:"+senate, −conspiracy",f:()=>{S.senate=clamp(S.senate+8,0,100);S.consp=clamp(S.consp-10,0,100);log("You sat among them as a citizen. It worked.","gd")}},
+      {n:"Purge the ringleaders",e:"−conspiracy now, worse later",f:()=>{S.consp=clamp(S.consp-25,0,100);S.senate=clamp(S.senate-18,0,100);S.purges++;log("Six houses emptied before dawn.","bad")}},
+      {n:"Ignore it",e:"+conspiracy",f:()=>{S.consp=clamp(S.consp+8,0,100);log("The motion passes into the record.")}}]},
+ {r:[9,9],w:2,h:"Fire in Rome",p:"Nine districts are burning. People are sleeping in the tombs along the Appian Way.",
+  ch:[{n:"Open the palace and rebuild",e:"−2,000,000 denarii · +plebs",f:()=>{if(S.r.denarii>=2e6){S.r.denarii-=2e6;S.plebs=clamp(S.plebs+16,0,100);S.dig+=400;log("They are calling you the father of the city.","gd")}else{S.plebs=clamp(S.plebs-14,0,100);log("Nothing came from the palace.","bad")}}},
+      {n:"Blame a sect",e:"−conspiracy, −plebs later",f:()=>{S.consp=clamp(S.consp-12,0,100);S.plebs=clamp(S.plebs-8,0,100);log("Someone must be responsible. Someone is chosen.","bad")}}]},
+ {r:[9,9],w:2,h:"The Praetorians ask",p:"The prefect mentions, pleasantly, that the guard has not received a donative this year.",
+  ch:[{n:"Pay generously",e:"−1,000,000 denarii · +loyalty",f:()=>{if(S.r.denarii>=1e6){S.r.denarii-=1e6;S.loyalty=clamp(S.loyalty+16,0,100);S.consp=clamp(S.consp-8,0,100);log("The guard is content.","gd")}else{S.loyalty=clamp(S.loyalty-15,0,100);S.consp=clamp(S.consp+10,0,100);log("The prefect bows and says nothing further.","bad")}}},
+      {n:"Refuse",e:"−loyalty, +conspiracy",f:()=>{S.loyalty=clamp(S.loyalty-18,0,100);S.consp=clamp(S.consp+14,0,100);log("You will not be extorted. They will not forget.","bad")}}]}
+];
+function doEvent(){
+ const pool=EVENTS.filter(e=>S.rank>=e.r[0]&&S.rank<=e.r[1]);
+ if(!pool.length)return;
+ let tot=0;pool.forEach(e=>tot+=e.w);let x=Math.random()*tot,ev=pool[0];
+ for(const e of pool){x-=e.w;if(x<=0){ev=e;break}}
+ modal({h:ev.h,p:ev.p,ch:ev.ch});buzz(14);
+}
+
+/* ============================ modal / banner ============================ */
+function modal(o){
+ const sh=$("#sheet");sh.innerHTML="";
+ const h=document.createElement("h3");h.textContent=o.h;sh.appendChild(h);
+ const p=document.createElement("p");p.textContent=o.p;sh.appendChild(p);
+ if(o.extra)sh.appendChild(o.extra);
+ o.ch.forEach(c=>{
+  const b=document.createElement("button");b.className="choice";
+  b.innerHTML='<div class="cn"></div>'+(c.e?'<div class="ce"></div>':"");
+  b.querySelector(".cn").textContent=c.n;
+  if(c.e)b.querySelector(".ce").textContent=c.e;
+  b.onclick=()=>{buzz(8);c.f();closeModal();recompute();render()};
+  sh.appendChild(b);
+ });
+ $("#modal").classList.add("on");
+}
+function closeModal(){$("#modal").classList.remove("on")}
+function banner(lat,ttl,bd,btn,dead){
+ const b=$("#banner");b.className="on"+(dead?" dead":"");
+ b.innerHTML="";
+ const a=document.createElement("div");a.className="lat";a.textContent=lat;b.appendChild(a);
+ const t=document.createElement("div");t.className="ttl";t.textContent=ttl;b.appendChild(t);
+ const d=document.createElement("div");d.className="bd";d.textContent=bd;b.appendChild(d);
+ if(btn){const x=document.createElement("button");x.className="big"+(dead?" danger":"");x.textContent=btn.label;
+  x.onclick=()=>{buzz(10);btn.f()};b.appendChild(x)}
+}
+
+/* ============================ ascend ============================ */
+function reqList(){
+ const nx=RANKS[S.rank].next;if(!nx)return[];
+ const out=[];
+ if(nx.req.r)for(const k in nx.req.r)out.push({t:NAMES[k].charAt(0).toUpperCase()+NAMES[k].slice(1),h:S.r[k],n:nx.req.r[k]});
+ if(nx.req.b)for(const k in nx.req.b)out.push({t:BID[k].n,h:S.b[k]||0,n:nx.req.b[k]});
+ if(nx.req.dig)out.push({t:"Dignitas",h:S.dig,n:nx.req.dig});
+ if(nx.req.m)for(const k in nx.req.m)out.push({t:k==="plebs"?"Popular favour":k==="senate"?"Senate favour":"Army loyalty",h:S[k],n:nx.req.m[k]});
+ if(nx.req.leg)out.push({t:"Legions",h:S.legions,n:nx.req.leg});
+ if(nx.req.prov)out.push({t:"Provinces",h:provList().length,n:nx.req.prov});
+ return out;
+}
+const canAscend=()=>{const l=reqList();return l.length>0&&l.every(x=>x.h>=x.n)};
+function ascend(){
+ const nx=RANKS[S.rank].next;if(!nx||!canAscend())return;
+ if(nx.march){
+  const p=clamp(.30+(S.loyalty-70)*.012+S.legions*.028+(50-S.senate)*.003,.15,.9);
+  modal({h:"The Rubicon",p:"Cross the river with an army and there is no legal way back. If you lose, the Senate will not spare you.\n\nYour chance, as best your legates can judge it: "+Math.round(p*100)+"%.",
+   ch:[{n:"Cross",e:"Win: empire. Lose: death.",f:()=>{
+     if(Math.random()<p)promote();
+     else die("defeated");
+    }},{n:"Wait another season",e:"Build strength first",f:()=>{}}]});
+  return;
+ }
+ promote();
+}
+function promote(){
+ const nx=RANKS[S.rank].next;
+ S.rank++;
+ if(nx.gift){
+  if(nx.gift.r)for(const k in nx.gift.r)gain(k,nx.gift.r[k]);
+  if(nx.gift.b)for(const k in nx.gift.b)S.b[k]=(S.b[k]||0)+nx.gift.b[k];
+  if(nx.gift.dig)S.dig+=nx.gift.dig;
+  if(nx.gift.m)for(const k in nx.gift.m)S[k]=clamp(S[k]+nx.gift.m[k],0,100);
+ }
+ recompute();buzz([12,40,12]);
+ banner(nx.lat,nx.ttl,nx.bd,{label:"Continue",f:()=>{
+  $("#banner").classList.remove("on");
+  if(nx.tab)S.tab=nx.tab;
+  if(S.rank===3)log("You do not carry sacks any more.","hi");
+  render();save();
+ }});
+ log("You are now "+RANKS[S.rank].n+".","hi");
+}
+
+/* ============================ rendering ============================ */
+function tabsFor(){
+ const t=[];
+ if(S.rank<3)t.push(["work","Work"]);
+ t.push(["build","Estate"]);
+ if(S.rank>=2)t.push(["trade","Trade"]);
+ if(S.rank>=3)t.push(["rome","Rome"]);
+ if(S.rank>=6)t.push(["war","War"]);
+ if(S.rank>=9)t.push(["palace","Palace"]);
+ return t;
+}
+function buildTabs(){
+ const t=tabsFor(),key=t.map(x=>x[0]).join(",");
+ if(key===tabsBuilt)return;tabsBuilt=key;
+ const c=$("#tabs");c.innerHTML="";
+ t.forEach(([id,label])=>{
+  const b=document.createElement("button");b.textContent=label;b.dataset.tab=id;
+  b.onclick=()=>{S.tab=id;buzz(5);render()};
+  c.appendChild(b);
+ });
+ if(!t.some(x=>x[0]===S.tab))S.tab=t[0][0];
+}
+function year(){
+ const y=-82+Math.floor(S.t/22);
+ return y<0?Math.abs(y)+" BC":(y===0?"1 AD":y+" AD");
+}
+let meterEls=null,meterSig="";
+function head(){
+ $("#rank").innerHTML="<b>"+RANKS[S.rank].l+"</b>";
+ $("#year").textContent=year();
+ const show=["denarii"].concat(MATS).filter(k=>S.seen[k]||S.r[k]>0);
+ if(S.rank>=3)show.push("dig");
+ const sig=show.join(",");
+ if(sig!==chipSig){
+  chipSig=sig;chipEls={};
+  const c=$("#chips");c.innerHTML="";
+  show.forEach(k=>{
+   const sp=document.createElement("span");sp.className="chip";
+   sp.innerHTML='<em></em><i></i>';
+   sp.querySelector("em").textContent=k==="dig"?"dignitas":NAMES[k];
+   c.appendChild(sp);
+   chipEls[k]={box:sp,val:sp.querySelector("i")};
+  });
+ }
+ show.forEach(k=>{
+  const e=chipEls[k];if(!e)return;
+  if(k==="dig"){e.val.textContent=fmt(S.dig);return}
+  const cap=CAP[k],v=S.r[k];
+  e.val.textContent=fmt(v)+(cap===Infinity?"":"/"+fmt(cap));
+  e.box.classList.toggle("full",cap!==Infinity&&v>=cap*.995);
+ });
+ const ms=[];
+ if(S.rank>=3){
+  ms.push(["plebs","People","var(--minium)"],["senate","Senate","var(--blue)"]);
+  if(S.rank>=6)ms.push(["loyalty","Army","var(--verd)"]);
+  if(S.rank>=9)ms.push(["consp","Plots","var(--minium)"]);
+ }
+ const msig=ms.map(x=>x[0]).join(",");
+ if(msig!==meterSig){
+  meterSig=msig;meterEls={};
+  const m=$("#meters");m.innerHTML="";
+  ms.forEach(([k,l,col])=>{
+   const d=document.createElement("div");d.className="meter";
+   d.innerHTML='<div class="mlab"><span></span><span class="v"></span></div><div class="bar"><i style="background:'+col+'"></i></div>';
+   d.querySelector(".mlab span").textContent=l;
+   m.appendChild(d);
+   meterEls[k]={v:d.querySelector(".v"),bar:d.querySelector(".bar i")};
+  });
+ }
+ ms.forEach(([k])=>{const e=meterEls[k];if(!e)return;
+  e.v.textContent=Math.round(S[k]);e.bar.style.width=S[k]+"%"});
+}
+function sec(txt){const h=document.createElement("h2");h.className="sec";h.textContent=txt;return h}
+function note(txt){const p=document.createElement("div");p.className="note";p.textContent=txt;return p}
+
+function cardEl(d){
+ const b=document.createElement("button");b.className="card";
+ b.innerHTML='<div class="crow"><span class="cn"></span><span class="cc"></span></div><div class="cd"></div><div class="cp"></div>';
+ b.querySelector(".cn").textContent=d.n;
+ b.querySelector(".cd").textContent=d.d;
+ const cp=b.querySelector(".cp"),cc=b.querySelector(".cc");
+ b.onclick=()=>{
+  const bl=blocked(d);if(bl)return;
+  const c=cost(d);
+  if(!has(c))return;
+  pay(c);S.b[d.id]=(S.b[d.id]||0)+1;recompute();buzz(9);
+  floatUp(b,"+ "+d.n.toLowerCase());
+  if(d.id==="legion")log("A new legion is enrolled.","hi");
+  render();
+ };
+ UPD.push(()=>{
+  const n=S.b[d.id]||0,bl=blocked(d),c=cost(d),afford=has(c);
+  cc.textContent=d.max===1?(n?"held":"")+"":(n?"×"+n:"");
+  b.classList.toggle("can",!bl&&afford);
+  b.classList.toggle("no",!!bl||!afford);
+  b.classList.toggle("idle",n>0&&(RATE[d.id]!==undefined&&RATE[d.id]<=.05));
+  let s;
+  if(bl==="owned")s="Already yours.";
+  else if(bl)s=bl.charAt(0).toUpperCase()+bl.slice(1)+" first.";
+  else s=costStr(c);
+  if(n&&d.prod){
+   const f=RATE[d.id]===undefined?1:RATE[d.id];
+   const outs=Object.keys(d.prod.out).map(k=>"+"+fmt(d.prod.out[k]*n*(d.m?M[d.m]:1)*f)+" "+NAMES[k]+"/s").join(", ");
+   s+=" · "+outs;
+   if(IDLE[d.id])s+=" — "+IDLE[d.id];
+  }
+  if(n&&d.leg)s+=" · upkeep "+fmt(n*800)+" denarii/s";
+  cp.innerHTML=bl?'<b>'+s+'</b>':s.replace(/— (.+)$/,'<span class="warn">— $1</span>');
+ });
+ return b;
+}
+function actEl(a){
+ const b=document.createElement("button");b.className="act";
+ b.innerHTML='<span class="an"></span><span class="ax"></span><span class="fill"></span>';
+ b.querySelector(".an").textContent=a.n;
+ const ax=b.querySelector(".ax");
+ b.onclick=()=>{
+  if(b.classList.contains("cool"))return;
+  if(a.in&&!has(a.in)){floatUp(b,"nothing to use","var(--minium)");return}
+  if(a.in)pay(a.in);
+  let txt=[];
+  for(const k in a.out){
+   const v=a.out[k]*(a.m?M[a.m]:1);
+   const before=S.r[k];gain(k,v);
+   const got=k==="denarii"?v:S.r[k]-before;
+   if(got>0.01)txt.push("+"+fmt(got)+" "+NAMES[k]);
+   else txt.push("full");
+  }
+  floatUp(b,txt.join(" "),txt[0]==="full"?"var(--minium)":null);
+  buzz(6);
+  b.classList.add("cool");b.style.setProperty("--cd",a.cd+"s");
+  setTimeout(()=>b.classList.remove("cool"),a.cd*1000);
+ };
+ UPD.push(()=>{
+  let s="";
+  if(a.in)s+=Object.keys(a.in).map(k=>a.in[k]+" "+NAMES[k]).join(", ")+" → ";
+  s+=Object.keys(a.out).map(k=>"+"+fmt(a.out[k]*(a.m?M[a.m]:1))+" "+NAMES[k]).join(", ");
+  ax.textContent=s;
+  b.classList.toggle("no",!!(a.in&&!has(a.in)));
+ });
+ return b;
+}
+function ascendEl(){
+ const nx=RANKS[S.rank].next;if(!nx)return null;
+ const w=document.createElement("div");w.className="ascend";
+ w.innerHTML='<h3>Next station</h3><p></p><div class="reqs"></div>';
+ w.querySelector("p").textContent=nx.march
+  ? "Eight legions and five provinces answer to you. Rome does not."
+  : "What stands between you and "+nx.ttl+":";
+ const rq=w.querySelector(".reqs");
+ const btn=document.createElement("button");btn.className="big"+(nx.march?" danger":"");
+ btn.textContent=nx.btn;btn.onclick=()=>{buzz(10);ascend()};
+ w.appendChild(btn);
+ UPD.push(()=>{
+  const l=reqList();
+  rq.innerHTML=l.map(x=>'<div class="req'+(x.h>=x.n?" ok":"")+'"><span>'+x.t+'</span><span>'+fmt(Math.min(x.h,x.n))+" / "+fmt(x.n)+'</span></div>').join("");
+  const ok=canAscend();
+  btn.disabled=!ok;
+ });
+ return w;
+}
+function ventEl(v){
+ const b=document.createElement("button");b.className="card";
+ b.innerHTML='<div class="crow"><span class="cn"></span><span class="cc"></span></div><div class="cd"></div><div class="cp"></div>';
+ b.querySelector(".cn").textContent=v.n;
+ b.querySelector(".cd").textContent=v.d;
+ const cc=b.querySelector(".cc"),cp=b.querySelector(".cp");
+ b.onclick=()=>{if(!S.voy[v.id]){buzz(8);startVoy(v)}};
+ UPD.push(()=>{
+  const run=S.voy[v.id];
+  if(run){
+   cc.textContent=Math.ceil(run.t)+"s";
+   cp.innerHTML='<span class="good">at sea…</span>';
+   b.classList.remove("can");b.classList.add("no");
+  }else{
+   const need=v.need&&!(S.b[v.need]||0);
+   cc.textContent=Math.round(v.risk*M.risk*100)+"% risk";
+   cp.textContent=need?("Requires a "+BID[v.need].n.toLowerCase()):
+    (costStr(v.c)+" → "+Object.keys(v.out).map(k=>fmt(v.out[k]*M.venture)+" "+NAMES[k]).join(", "));
+   const ok=!need&&has(v.c)&&Object.keys(S.voy).length<M.slots;
+   b.classList.toggle("can",ok);b.classList.toggle("no",!ok);
+  }
+ });
+ return b;
+}
+function romeActs(){
+ const wrap=document.createElement("div");
+ const acts=[
+  {id:"games",n:"Sponsor public games",cost:()=>Math.round(20000*Math.pow(1.15,S.plebs/3)),
+   d:"Beasts, blood and free seats.",f:()=>{S.plebs=clamp(S.plebs+9*M.games,0,100);S.dig+=180*M.games;log("The crowd chants your name for three days.","gd")}},
+  {id:"dole",n:"Distribute grain",gr:2000,d:"Free bread for the tribes.",
+   f:()=>{S.plebs=clamp(S.plebs+6,0,100);S.dig+=40;log("Queues from the Aventine to the river.","gd")}},
+  {id:"court",n:"Court the Senate",cost:()=>Math.round(40000*Math.pow(1.12,S.senate/3)),
+   d:"Dinners, loans, and marriages arranged.",f:()=>{
+    if(Math.random()<.14){S.dig=Math.max(0,S.dig-200);S.plebs=clamp(S.plebs-5,0,100);log("Word of the bribes got out.","bad")}
+    else{S.senate=clamp(S.senate+7,0,100);log("Three more houses will vote with you.","gd")}}}
+ ];
+ acts.forEach(a=>{
+  const b=document.createElement("button");b.className="card";
+  b.innerHTML='<div class="crow"><span class="cn"></span><span class="cc"></span></div><div class="cd"></div><div class="cp"></div>';
+  b.querySelector(".cn").textContent=a.n;b.querySelector(".cd").textContent=a.d;
+  const cp=b.querySelector(".cp");
+  b.onclick=()=>{
+   if(a.gr){if(S.r.grain<a.gr)return;S.r.grain-=a.gr}
+   else{const c=a.cost();if(S.r.denarii<c)return;S.r.denarii-=c}
+   buzz(9);a.f();floatUp(b,a.n.split(" ")[0]);render();
+  };
+  UPD.push(()=>{
+   const c=a.gr?a.gr:a.cost();
+   const ok=a.gr?S.r.grain>=c:S.r.denarii>=c;
+   cp.textContent=fmt(c)+" "+(a.gr?"grain":"denarii");
+   b.classList.toggle("can",ok);b.classList.toggle("no",!ok);
+  });
+  wrap.appendChild(b);
+ });
+ return wrap;
+}
+function campaignEl(){
+ const wrap=document.createElement("div");
+ if(S.camp){
+  const p=PID[S.camp.p],b=document.createElement("div");b.className="card idle";
+  b.innerHTML='<div class="crow"><span class="cn">Campaign in '+p.n+'</span><span class="cc"></span></div><div class="cd">'+fmt(S.camp.n)+' legions in the field. Odds '+Math.round(S.camp.o*100)+'%.</div>';
+  const cc=b.querySelector(".cc");
+  UPD.push(()=>{cc.textContent=Math.ceil(S.camp?S.camp.t:0)+"s"});
+  wrap.appendChild(b);
+  return wrap;
+ }
+ PROV.forEach(p=>{
+  if(S.prov[p.id])return;
+  const b=document.createElement("button");b.className="card";
+  b.innerHTML='<div class="crow"><span class="cn"></span><span class="cc"></span></div><div class="cd"></div><div class="cp"></div>';
+  b.querySelector(".cn").textContent=p.n;b.querySelector(".cd").textContent=p.d;
+  const cc=b.querySelector(".cc"),cp=b.querySelector(".cp");
+  b.onclick=()=>{
+   if(!S.legions){log("You have no legions.","bad");return}
+   let n=S.legions;
+   const box=document.createElement("div");box.className="stepper";
+   box.innerHTML='<button>−</button><span></span><button>+</button>';
+   const lbl=box.querySelector("span"),bs=box.querySelectorAll("button");
+   const upd=()=>{lbl.textContent=n+" legion"+(n>1?"s":"")+" · "+Math.round(odds(n,p)*100)+"% to win"};
+   bs[0].onclick=()=>{n=Math.max(1,n-1);upd()};
+   bs[1].onclick=()=>{n=Math.min(S.legions,n+1);upd()};
+   upd();
+   modal({h:"Campaign: "+p.n,p:"Defence strength "+fmt(p.df)+". Defeat costs legions, popularity and the Senate's patience.",extra:box,
+    ch:[{n:"March",e:"",f:()=>startCamp(p,n)},{n:"Not yet",e:"",f:()=>{}}]});
+  };
+  UPD.push(()=>{
+   const o=S.legions?Math.round(odds(S.legions,p)*100):0;
+   cc.textContent=S.legions?o+"%":"no army";
+   const yields=Object.keys(p.r).map(k=>"+"+p.r[k]+" "+NAMES[k]+"/s").concat(["+"+fmt(p.den)+" denarii/s"]).join(", ");
+   cp.textContent=yields;
+   b.classList.toggle("can",S.legions>0&&o>=40);
+   b.classList.toggle("no",!S.legions);
+  });
+  wrap.appendChild(b);
+ });
+ return wrap;
+}
+function palaceEl(){
+ const wrap=document.createElement("div");
+ const acts=[
+  {n:"Donative to the guard",c:4000000,d:"Silver in every praetorian's hand.",f:()=>{S.loyalty=clamp(S.loyalty+14,0,100);S.consp=clamp(S.consp-10,0,100);log("The guard salutes rather more warmly.","gd")}},
+  {n:"Games in the arena",c:6000000,d:"A hundred days of spectacle.",f:()=>{S.plebs=clamp(S.plebs+14*M.games,0,100);S.consp=clamp(S.consp-6,0,100);log("Rome is delighted with you.","gd")}},
+  {n:"Sit with the Senate",c:0,d:"Attend as a citizen. Costs nothing but pride.",f:()=>{S.senate=clamp(S.senate+5,0,100);S.consp=clamp(S.consp-5,0,100);S.dig=Math.max(0,S.dig-50);log("You let a consul contradict you in public.")},cd:true},
+  {n:"Purge the suspects",c:0,d:"Names, arrests, silence.",f:()=>{S.consp=clamp(S.consp-22,0,100);S.senate=clamp(S.senate-14,0,100);S.purges++;log("The lists are read out at dawn.","bad")},cd:true},
+  {n:"Name an heir",c:0,d:"An adopted son ends the argument about what comes after you.",f:()=>{S.heir=true;S.consp=clamp(S.consp-12,0,100);S.senate=clamp(S.senate+4,0,100);log("The succession is settled.","gd")},once:()=>S.heir}
+ ];
+ acts.forEach(a=>{
+  if(a.once&&a.once())return;
+  const b=document.createElement("button");b.className="card";
+  b.innerHTML='<div class="crow"><span class="cn"></span><span class="cc"></span></div><div class="cd"></div><div class="cp"></div>';
+  b.querySelector(".cn").textContent=a.n;b.querySelector(".cd").textContent=a.d;
+  const cp=b.querySelector(".cp");
+  b.onclick=()=>{if(a.c&&S.r.denarii<a.c)return;if(a.c)S.r.denarii-=a.c;buzz(9);a.f();render()};
+  UPD.push(()=>{cp.textContent=a.c?fmt(a.c)+" denarii":"no cost";
+   const ok=!a.c||S.r.denarii>=a.c;b.classList.toggle("can",ok);b.classList.toggle("no",!ok)});
+  wrap.appendChild(b);
+ });
+ wrap.appendChild(sec("Monuments"));
+ WON.forEach(w=>{
+  const b=document.createElement("button");b.className="card";
+  b.innerHTML='<div class="crow"><span class="cn"></span><span class="cc"></span></div><div class="cd"></div><div class="cp"></div>';
+  b.querySelector(".cn").textContent=w.n;b.querySelector(".cd").textContent=w.d;
+  const cc=b.querySelector(".cc"),cp=b.querySelector(".cp");
+  b.onclick=()=>{
+   if(S.won[w.id]||!has(w.c))return;
+   pay(w.c);S.won[w.id]=1;
+   for(const k in w.e)k==="dig"?S.dig+=w.e[k]:S[k]=clamp(S[k]+w.e[k],0,100);
+   buzz([10,30,10]);log(w.n+" is finished.","hi");checkVictory();render();
+  };
+  UPD.push(()=>{
+   const done=!!S.won[w.id];
+   cc.textContent=done?"built":"";
+   cp.textContent=done?"Standing.":costStr(w.c);
+   b.classList.toggle("can",!done&&has(w.c));b.classList.toggle("no",done||!has(w.c));
+  });
+  wrap.appendChild(b);
+ });
+ return wrap;
+}
+
+function render(){
+ buildTabs();
+ UPD=[];
+ const v=$("#view");v.scrollTop=v.scrollTop;const keep=v.scrollTop;
+ v.innerHTML="";
+ const t=S.tab;
+ [...$("#tabs").children].forEach(b=>b.classList.toggle("on",b.dataset.tab===t));
+
+ const asc=RANKS[S.rank].next;
+ const ascTabs=S.rank<=1?["work","build"]:S.rank===2?["trade","build"]:S.rank<=6?["rome"]:["war"];
+ if(asc&&ascTabs.indexOf(t)>=0){const e=ascendEl();if(e)v.appendChild(e)}
+
+ if(t==="work"){
+  const acts=ACT.filter(a=>!a.need||(S.b[a.need]||0)>0);
+  v.appendChild(sec("By your own hands"));
+  const g=document.createElement("div");g.className="acts";
+  acts.forEach(a=>g.appendChild(actEl(a)));
+  v.appendChild(g);
+  if(!(S.b.handmill||0))v.appendChild(note("Raw grain fetches almost nothing. Bread is worth five times as much. You will need a quern and an oven."));
+ }
+ if(t==="build"){
+  const own=B.filter(d=>d.t==="build"&&S.rank>=d.r&&!d.mm);
+  const ups=B.filter(d=>d.t==="build"&&S.rank>=d.r&&d.mm);
+  v.appendChild(sec("Land and labour"));
+  own.forEach(d=>{if(!(d.max&&(S.b[d.id]||0)>=d.max)||d.max>1)v.appendChild(cardEl(d))});
+  v.appendChild(sec("Improvements"));
+  ups.forEach(d=>{if(!(S.b[d.id]||0))v.appendChild(cardEl(d))});
+  if(ups.every(d=>S.b[d.id]))v.appendChild(note("Nothing left to improve here."));
+ }
+ if(t==="trade"){
+  v.appendChild(sec("Ventures ("+Object.keys(S.voy).length+" of "+M.slots+" out)"));
+  VENT.filter(x=>S.rank>=x.r).forEach(x=>v.appendChild(ventEl(x)));
+  v.appendChild(sec("Ships and men"));
+  B.filter(d=>d.t==="trade"&&S.rank>=d.r).forEach(d=>v.appendChild(cardEl(d)));
+ }
+ if(t==="rome"){
+  v.appendChild(sec("Influence"));
+  v.appendChild(romeActs());
+  v.appendChild(sec("Patronage"));
+  B.filter(d=>d.t==="rome"&&S.rank>=d.r).forEach(d=>{if(!(d.max===1&&S.b[d.id]))v.appendChild(cardEl(d))});
+ }
+ if(t==="war"){
+  v.appendChild(sec("The army"));
+  B.filter(d=>d.t==="war"&&S.rank>=d.r).forEach(d=>v.appendChild(cardEl(d)));
+  v.appendChild(sec(S.camp?"In the field":"Provinces"));
+  v.appendChild(campaignEl());
+  const held=provList();
+  if(held.length){
+   v.appendChild(sec("Held"));
+   const d=document.createElement("div");d.className="note";
+   d.textContent=held.map(x=>PID[x].n).join(" · ");
+   v.appendChild(d);
+  }
+ }
+ if(t==="palace"){
+  v.appendChild(sec("Reign of "+Math.floor(S.reign/22)+" years"));
+  v.appendChild(palaceEl());
+ }
+ UPD.forEach(f=>f());
+ head();
+ v.scrollTop=keep;
+}
+
+/* ============================ persistence ============================ */
+let saveT=0;
+async function save(){
+ try{if(window.storage)await window.storage.set("roma:save",JSON.stringify(S))}catch(e){}
+}
+async function load(){
+ try{
+  if(!window.storage)return false;
+  const r=await window.storage.get("roma:save");
+  if(r&&r.value){const o=JSON.parse(r.value);if(o&&o.v===1){S=Object.assign(fresh(),o);return true}}
+ }catch(e){}
+ return false;
+}
+
+/* ============================ loop ============================ */
+let last=performance.now(),acc=0;
+function loop(now){
+ const dt=Math.min(.25,(now-last)/1000);last=now;
+ tick(dt);
+ acc+=dt;
+ if(acc>.2){acc=0;UPD.forEach(f=>f());head()}
+ saveT+=dt;if(saveT>12){saveT=0;save()}
+ requestAnimationFrame(loop);
+}
+
+/* ============================ boot ============================ */
+(async function(){
+ const loaded=await load();
+ recompute();
+ if(!loaded){
+  log("A field, a hut, and nothing else.");
+  log("Cut wheat. It is what there is.");
+ }else log("You take up where you left off.");
+ render();
+ $("#year").onclick=()=>modal({h:"This life",p:"You are "+RANKS[S.rank].n.toLowerCase()+" in the year "+year()+".",
+  ch:[{n:"Keep going",e:"",f:()=>{}},
+      {n:"Start again as a peasant",e:"Everything you built is lost",f:()=>{S=fresh();recompute();log("A field. An oven. Nothing else.");save()}}]});
+ requestAnimationFrame(loop);
+ document.addEventListener("visibilitychange",()=>{if(document.hidden)save();else last=performance.now()});
+})();
+</script>
+</body>
+</html>

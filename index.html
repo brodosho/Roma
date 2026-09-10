@@ -1,0 +1,2647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#17130f">
+<title>Ex Agro — a Roman ascent</title>
+<style>
+:root{
+  --soot:#17130f;
+  --panel:#201a15;
+  --panel2:#261f18;
+  --line:#3a2f24;
+  --ink:#ece2cd;
+  --dim:#9c8a70;
+  --faint:#6d5f4c;
+  --minium:#b0442e;
+  --ochre:#c99b47;
+  --verd:#7d9a83;
+  --blue:#5b7ba0;
+  --r:3px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;height:100%;overflow:hidden}
+body{
+  background:var(--soot);
+  color:var(--ink);
+  font-family:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+  font-size:16px;line-height:1.45;
+  font-variant-numeric:tabular-nums;
+  overscroll-behavior:none;
+  touch-action:manipulation;
+}
+button{font:inherit;color:inherit;background:none;border:none;padding:0;cursor:pointer;font-variant-numeric:tabular-nums}
+#app{display:flex;flex-direction:column;height:100dvh;max-width:560px;margin:0 auto;position:relative}
+
+/* ---------- header ---------- */
+header{
+  padding:calc(env(safe-area-inset-top) + 10px) 14px 8px;
+  border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg,#1d1712,#17130f);
+  position:relative;z-index:5;
+}
+.crown{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+#rank{
+  font-size:15px;letter-spacing:.22em;text-transform:uppercase;color:var(--ochre);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+#rank b{font-weight:600}
+#year{font-size:12px;color:var(--faint);letter-spacing:.08em;white-space:nowrap}
+#chips{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 10px;margin-top:6px}
+.chip{font-size:12.5px;line-height:1.55;height:19px;color:var(--dim);white-space:nowrap;overflow:hidden;
+  display:flex;justify-content:space-between;gap:5px}
+.chip em{font-style:normal;overflow:hidden;text-overflow:ellipsis}
+.chip i{font-style:normal;color:var(--ink);flex:none}
+.chip.full i{color:var(--minium)}
+.chip.bump i{animation:bump .45s ease-out}
+@keyframes bump{0%{color:var(--ochre)}100%{color:var(--ink)}}
+#meters{display:flex;gap:10px;margin-top:7px}
+.meter{flex:1;min-width:0}
+.meter .mlab{display:flex;justify-content:space-between;font-size:11px;color:var(--faint);letter-spacing:.04em}
+.meter .bar{height:3px;background:#2c241c;margin-top:3px;overflow:hidden}
+.meter .bar i{display:block;height:100%;transition:width .4s ease}
+
+/* ---------- view ---------- */
+#view{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 12px 4px}
+h2.sec{
+  font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);
+  font-weight:400;margin:20px 0 8px;display:flex;align-items:center;gap:10px;
+}
+h2.sec:first-child{margin-top:2px}
+h2.sec::after{content:"";flex:1;height:1px;background:var(--line)}
+.note{color:var(--dim);font-size:14px;margin:6px 0 2px;font-style:italic}
+
+/* action buttons */
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.act{
+  position:relative;overflow:hidden;text-align:left;
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--r);
+  padding:11px 12px;min-height:56px;display:flex;flex-direction:column;justify-content:center;
+  transition:background .12s,transform .06s;
+}
+.act:active{transform:scale(.985);background:var(--panel2)}
+.act .an{font-size:15.5px}
+.act .ax{font-size:12px;color:var(--faint);margin-top:2px}
+.act .fill{position:absolute;left:0;bottom:0;height:2px;width:0;background:var(--ochre)}
+.act.cool{color:var(--dim)}
+.act.cool .fill{animation:cd linear forwards;animation-duration:var(--cd)}
+@keyframes cd{from{width:100%}to{width:0}}
+.act.no{opacity:.42}
+
+/* cards */
+.card{
+  display:block;width:100%;text-align:left;
+  background:var(--panel);border:1px solid var(--line);border-left:2px solid var(--line);
+  border-radius:var(--r);padding:10px 12px;margin-bottom:7px;
+  transition:border-color .2s,background .12s,transform .06s;
+}
+.card:active{transform:scale(.99)}
+.card.can{border-left-color:var(--ochre)}
+.card.no{opacity:.5}
+.card.idle{border-left-color:var(--minium)}
+.crow{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.cn{font-size:16px}
+.cc{font-size:13px;color:var(--ochre);white-space:nowrap}
+.cd{font-size:13px;color:var(--dim);margin-top:2px}
+.cp{font-size:12.5px;color:var(--faint);margin-top:4px}
+.cp b{font-weight:400;color:var(--dim)}
+.warn{color:var(--minium)}
+.good{color:var(--verd)}
+
+/* ascend */
+.ascend{
+  border:1px solid var(--ochre);border-radius:var(--r);background:linear-gradient(180deg,#2a2116,#201a13);
+  padding:12px 13px;margin-bottom:14px;
+}
+.ascend h3{margin:0;font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:var(--ochre);font-weight:400}
+.ascend p{margin:6px 0 9px;font-size:14px;color:var(--dim)}
+.reqs{display:flex;flex-direction:column;gap:5px;margin-bottom:10px}
+.req{font-size:13px;color:var(--dim);display:flex;justify-content:space-between;gap:8px}
+.req.ok{color:var(--verd)}
+.big{
+  display:block;width:100%;padding:13px;border:1px solid var(--ochre);border-radius:var(--r);
+  background:var(--ochre);color:#20180d;font-size:15px;letter-spacing:.14em;text-transform:uppercase;
+}
+.big:disabled{background:none;color:var(--faint);border-color:var(--line);letter-spacing:.1em}
+.big.danger{background:var(--minium);border-color:var(--minium);color:#f6e6df}
+
+/* log */
+#log{
+  border-top:1px solid var(--line);background:#141009;
+  padding:6px 13px 4px;height:80px;min-height:80px;max-height:80px;flex:0 0 80px;
+  overflow:hidden;display:flex;flex-direction:column;
+}
+#log::after{content:"tap for the whole chronicle";position:absolute;right:14px;bottom:2px;
+  font-size:9.5px;letter-spacing:.1em;color:#4c4235;pointer-events:none}
+#log{position:relative}
+.chron div{font-size:13px;line-height:1.5;color:var(--dim);padding:6px 0;border-bottom:1px solid #241e18}
+.chron div.hi{color:var(--ochre)}
+.chron div.bad{color:var(--minium)}
+.chron div.gd{color:var(--verd)}
+#log div{font-size:12.8px;line-height:1.42;color:var(--dim);animation:sl .3s ease-out;flex:0 0 auto;
+  white-space:normal;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+  padding-bottom:3px;transition:opacity .8s ease}
+#log div.out{opacity:0}
+#log div.hi{color:var(--ochre)}
+#log div.bad{color:var(--minium)}
+#log div.gd{color:var(--verd)}
+@keyframes sl{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* tabs */
+#tabs{display:flex;border-top:1px solid var(--line);background:#1a1611;padding-bottom:env(safe-area-inset-bottom)}
+#tabs button{
+  flex:1;padding:11px 2px 12px;font-size:11.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--faint);border-top:2px solid transparent;margin-top:-1px;
+}
+#tabs button.on{color:var(--ochre);border-top-color:var(--ochre);background:#211a13}
+#tabs button.alert::after{content:"";display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--minium);vertical-align:top;margin-left:3px}
+
+/* float text */
+.float{position:fixed;pointer-events:none;font-size:14px;color:var(--ochre);z-index:60;animation:fl .9s ease-out forwards}
+@keyframes fl{from{opacity:1;transform:translate(-50%,0)}to{opacity:0;transform:translate(-50%,-38px)}}
+
+/* modal */
+#modal{position:fixed;inset:0;z-index:80;display:none;align-items:flex-end;justify-content:center;background:rgba(8,6,4,.72);backdrop-filter:blur(2px)}
+#modal.on{display:flex;animation:fade .2s}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.sheet{
+  width:100%;max-width:560px;background:var(--panel);border-top:2px solid var(--ochre);
+  padding:18px 16px calc(env(safe-area-inset-bottom) + 18px);animation:up .28s cubic-bezier(.2,.8,.3,1);
+  max-height:86dvh;overflow-y:auto;
+}
+@keyframes up{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
+.sheet h3{margin:0 0 8px;font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:var(--ochre);font-weight:400}
+.sheet p{margin:0 0 14px;font-size:15.5px;line-height:1.5}
+.sheet p.sub{color:var(--dim);font-size:14px}
+.choice{
+  display:block;width:100%;text-align:left;background:var(--panel2);border:1px solid var(--line);
+  border-radius:var(--r);padding:12px 13px;margin-bottom:8px;
+}
+.choice:active{background:#2e251c}
+.choice .cn{font-size:15px}
+.choice .ce{font-size:12.5px;color:var(--faint);margin-top:3px}
+.stepper{display:flex;align-items:center;justify-content:space-between;background:var(--panel2);border:1px solid var(--line);padding:8px 12px;margin-bottom:12px;border-radius:var(--r)}
+.stepper button{font-size:22px;width:44px;text-align:center;color:var(--ochre)}
+.stepper span{font-size:15px}
+
+/* banner */
+#banner{position:fixed;inset:0;z-index:90;display:none;background:var(--soot);padding:0 22px;flex-direction:column;justify-content:center;text-align:center}
+#banner.on{display:flex;animation:fade .5s}
+#banner .lat{font-size:11px;letter-spacing:.4em;text-transform:uppercase;color:var(--faint);animation:fade 1s}
+#banner .ttl{font-size:31px;letter-spacing:.14em;text-transform:uppercase;color:var(--ochre);margin:14px 0 18px;line-height:1.2}
+#banner .bd{font-size:16px;color:var(--dim);line-height:1.65;max-width:36ch;margin:0 auto 26px}
+#banner.dead .ttl{color:var(--minium)}
+#banner .big{max-width:280px;margin:0 auto}
+#title{position:fixed;inset:0;z-index:95;background:radial-gradient(120% 80% at 50% 18%,#241d15 0%,#12100c 70%);
+  display:flex;align-items:center;justify-content:center;padding:24px 22px;overflow-y:auto}
+#title.gone{animation:tfade .7s ease-in forwards;pointer-events:none}
+@keyframes tfade{to{opacity:0;transform:scale(1.06)}}
+.tinner{max-width:420px;text-align:center;animation:trise .9s ease-out}
+@keyframes trise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+#wreath{width:190px;height:95px;display:block;margin:0 auto -6px}
+.tsup{font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--faint)}
+#title h1{font-size:44px;letter-spacing:.24em;margin:10px 0 2px;color:var(--ochre);font-weight:400;
+  text-shadow:0 0 26px rgba(201,155,71,.22)}
+.tsub{font-size:12.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--faint);margin-bottom:20px}
+.tpos{font-size:15px;line-height:1.6;color:var(--ink);margin:0 0 16px}
+.tfact{font-size:13px;line-height:1.6;color:var(--dim);border-top:1px solid var(--line);
+  border-bottom:1px solid var(--line);padding:11px 0;margin-bottom:20px;text-align:left}
+.tfact b{display:block;font-weight:400;font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);margin-bottom:5px}
+.tbest{font-size:12px;color:var(--faint);margin-top:12px;letter-spacing:.1em}
+#banner .ttl{animation:slam .62s cubic-bezier(.16,1.4,.3,1)}
+@keyframes slam{
+ 0%{transform:scale(3.6) rotate(-18deg);opacity:0}
+ 45%{opacity:1}
+ 62%{transform:scale(.9) rotate(3deg)}
+ 80%{transform:scale(1.05) rotate(-1.5deg)}
+ 100%{transform:none}}
+#banner .fact{font-size:13px;line-height:1.6;color:var(--dim);border-top:1px solid var(--line);
+  padding-top:12px;margin:0 auto 22px;max-width:34ch;text-align:left}
+#banner .fact b{display:block;font-weight:400;font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);margin-bottom:5px}
+.shake{animation:shk .5s ease-out}
+@keyframes shk{10%{transform:translate(-4px,2px)}25%{transform:translate(5px,-3px)}
+ 45%{transform:translate(-4px,-1px)}65%{transform:translate(3px,2px)}100%{transform:none}}
+.jack{animation:jflash .8s ease-out}
+@keyframes jflash{0%{box-shadow:0 0 0 0 rgba(201,155,71,.9),0 0 40px rgba(201,155,71,.6)}
+ 100%{box-shadow:0 0 0 0 rgba(201,155,71,0)}}
+.quick{display:block;width:100%;border:1px solid var(--ochre);border-radius:var(--r);background:linear-gradient(180deg,#2b2216,#211a12);
+  padding:12px;margin:2px 0 10px;font-size:14.5px;color:var(--ochre);text-align:center;transition:transform .06s}
+.quick:active{transform:scale(.985);background:var(--ochre);color:#20180d}
+.quick b{display:block;font-weight:400;font-size:11.5px;color:var(--faint);margin-top:3px}
+.quick:active b{color:#4a3a1e}
+.ctools{display:flex;align-items:center;gap:10px}
+#menu{font-size:18px;color:var(--ochre);padding:2px 2px 2px 6px;line-height:1}
+#drawer{position:fixed;inset:0;z-index:70;display:none;background:rgba(8,6,4,.6)}
+#drawer.on{display:block}
+#drawer .dpanel{position:absolute;right:0;top:0;bottom:0;width:88%;max-width:430px;background:var(--soot);
+  border-left:1px solid var(--line);display:flex;flex-direction:column;animation:slidein .24s cubic-bezier(.2,.8,.3,1)}
+@keyframes slidein{from{transform:translateX(40px);opacity:.5}to{transform:none;opacity:1}}
+.dhead{display:flex;align-items:center;gap:6px;padding:calc(env(safe-area-inset-top) + 10px) 10px 8px 12px;border-bottom:1px solid var(--line)}
+#dtabs{flex:1;display:flex;gap:4px;overflow-x:auto}
+#dtabs button{font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);
+  padding:6px 9px;border:1px solid transparent;border-radius:var(--r);white-space:nowrap}
+#dtabs button.on{color:var(--ochre);border-color:var(--line);background:var(--panel)}
+#dclose{font-size:16px;color:var(--faint);padding:6px 8px}
+#dbody{flex:1;overflow-y:auto;padding:12px 12px calc(env(safe-area-inset-bottom) + 20px)}
+.toggle{display:flex;justify-content:space-between;align-items:center;background:var(--panel);
+  border:1px solid var(--line);border-radius:var(--r);padding:11px 12px;margin-bottom:7px}
+.toggle span{font-size:14.5px}
+.toggle b{font-weight:400;font-size:12px;color:var(--faint);display:block}
+.toggle button{border:1px solid var(--line);border-radius:var(--r);padding:7px 0;width:62px;text-align:center;
+  font-size:12.5px;color:var(--ochre);background:var(--panel2)}
+.toggle button.off{color:var(--faint)}
+/* market / ledger / paths / tavern */
+.mrow{display:flex;align-items:center;gap:7px;background:var(--panel);border:1px solid var(--line);
+  border-radius:var(--r);padding:8px 10px;margin-bottom:6px}
+.mrow .mn{flex:1;min-width:0;font-size:14.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mrow .mn b{font-weight:400;color:var(--faint);font-size:12px;display:block}
+.mrow button{border:1px solid var(--line);border-radius:var(--r);padding:7px 0;width:46px;text-align:center;
+  font-size:13px;color:var(--ochre);background:var(--panel2);transition:transform .06s,background .1s}
+.mrow button:active{transform:scale(.92);background:var(--ochre);color:#20180d}
+.mrow button.wide{width:60px}
+.mrow button.off{color:var(--faint);border-color:var(--line)}
+.led{display:flex;justify-content:space-between;font-size:13.5px;padding:3px 0;color:var(--dim);gap:10px}
+.led i{font-style:normal;color:var(--ink)}
+.led.neg i{color:var(--minium)}
+.led.tot{border-top:1px solid var(--line);margin-top:5px;padding-top:6px;color:var(--ochre)}
+.led.tot i{color:var(--ochre)}
+.bars{height:4px;background:#2c241c;margin:4px 0 10px;display:flex;overflow:hidden}
+.bars i{display:block;height:100%}
+.path{border-left-width:2px}
+.path.ready{border-left-color:var(--ochre)}
+.path .tag{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+.dice{font-size:30px;letter-spacing:.22em;color:var(--ochre);text-align:center;padding:10px 0 4px;
+  font-variant-numeric:tabular-nums;transition:color .2s}
+.dice.winflash{animation:dflash .7s ease-out}
+@keyframes dflash{0%{transform:scale(1.25);text-shadow:0 0 26px rgba(201,155,71,.9)}100%{transform:none;text-shadow:none}}
+.feedbox{background:#141009;border:1px solid var(--line);border-radius:var(--r);padding:7px 10px;margin-bottom:12px;min-height:74px}
+.feedbox div{font-size:12.5px;line-height:1.55;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.feedbox div.gd{color:var(--verd)}
+.feedbox div.bad{color:var(--minium)}
+.feedbox div.dim{color:var(--faint);font-style:italic}
+.gres{font-size:13px;color:var(--dim);text-align:center;margin-bottom:10px;min-height:34px;line-height:1.45}
+.gres.good{color:var(--verd)}
+.gres.warn{color:var(--minium)}
+.track{margin:2px 0 8px}
+.lane{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.lname{font-size:12px;color:var(--faint);width:74px;flex:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lbar{flex:1;height:7px;background:#2c241c;overflow:hidden}
+.lbar i{display:block;height:100%;width:0;background:var(--ochre)}
+/* press feedback */
+@keyframes pop{0%{transform:scale(1)}35%{transform:scale(.965)}100%{transform:scale(1)}}
+@keyframes flash{0%{background:rgba(201,155,71,.30)}100%{background:transparent}}
+.card.hit{animation:pop .22s ease-out,flash .5s ease-out}
+.act.hit{animation:pop .18s ease-out}
+.float{font-size:16px;font-weight:600;text-shadow:0 2px 8px rgba(0,0,0,.6)}
+@keyframes fl{0%{opacity:0;transform:translate(-50%,4px) scale(.85)}
+ 18%{opacity:1;transform:translate(-50%,-4px) scale(1.12)}
+ 100%{opacity:0;transform:translate(-50%,-46px) scale(1)}}
+.ring{position:fixed;pointer-events:none;z-index:59;border:1.5px solid var(--ochre);border-radius:50%;
+  width:14px;height:14px;margin:-7px 0 0 -7px;animation:ring .45s ease-out forwards}
+@keyframes ring{from{opacity:.85;transform:scale(.4)}to{opacity:0;transform:scale(5)}}
+#snd{position:absolute;right:12px;top:calc(env(safe-area-inset-top) + 34px);font-size:15px;color:var(--faint);padding:4px 6px}
+::-webkit-scrollbar{width:0}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="crown"><div id="rank"></div><div class="ctools"><span id="year"></span><button id="menu">☰</button></div></div>
+    <div id="chips"></div>
+    <div id="meters"></div>
+  </header>
+  <div id="view"></div>
+  <div id="log"></div>
+  <div id="tabs"></div>
+</div>
+<div id="title">
+  <div class="tinner">
+    <svg id="wreath" viewBox="0 0 240 120" aria-hidden="true"></svg>
+    <div class="tsup">Anno DCLXXII ab urbe condita · 82 BC</div>
+    <h1>EX AGRO</h1>
+    <div class="tsub">out of the field</div>
+    <p class="tpos">You are a tenant farmer nine miles south of Rome. You own one tunic, one clay oven and one field of hard wheat, and you owe rent on the field.<br><br>Above you sit landowners, merchants, magistrates, consuls and generals. Above all of them, one man.</p>
+    <div class="tfact"><b>Rome, this year</b>Sulla has marched on Rome, made himself dictator and posted lists of men who may be killed for their property. The city holds close to a million people. Almost none of them own anything.</div>
+    <button class="big" id="start">Begin</button>
+    <div class="tbest" id="tbest"></div>
+  </div>
+</div>
+<div id="drawer"><div class="dpanel">
+  <div class="dhead"><div id="dtabs"></div><button id="dclose">✕</button></div>
+  <div id="dbody"></div>
+</div></div>
+<div id="modal"><div class="sheet" id="sheet"></div></div>
+<div id="banner"></div>
+
+<script>
+"use strict";
+/* ============================ helpers ============================ */
+const $=s=>document.querySelector(s);
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+function fmt(n){
+  if(n===Infinity)return"∞";
+  n=Math.floor(n*10)/10;
+  const a=Math.abs(n);
+  if(a>=1e9)return(n/1e9).toFixed(2)+"B";
+  if(a>=1e6)return(n/1e6).toFixed(2)+"M";
+  if(a>=1e4)return Math.round(n/100)/10+"k";
+  if(a>=100||Number.isInteger(n))return Math.round(n).toLocaleString("en-US");
+  return n.toFixed(1);
+}
+function buzz(ms){try{navigator.vibrate&&navigator.vibrate(ms)}catch(e){}}
+
+/* ============================ data ============================ */
+const MATS=["grain","timber","olives","flour","bread","oil","marble"];
+const NAMES={grain:"grain",timber:"timber",olives:"olives",flour:"flour",bread:"bread",oil:"oil",marble:"marble",denarii:"denarii"};
+
+const FACTS={
+ 1:"A farm of about 25 iugera — some fifteen acres — was reckoned enough to keep one family. Cato the Elder wrote that of all the ways to make money from land, olives paid best and grain paid worst.",
+ 2:"Senators were forbidden by law to own large merchant ships, so they traded through freedmen who fronted the business and took a cut. Almost every great Roman fortune had a freedman's name on the paperwork.",
+ 3:"Clients called on their patron at dawn — the salutatio. A busy man might greet a hundred callers before breakfast, hand each a small basket of food, and expect every one of them to vote as told.",
+ 4:"The quaestorship was the first rung of the cursus honorum and normally opened at thirty. Holding it once made you a member of the Senate for life.",
+ 5:"Aediles paid for the public games out of their own pockets. Caesar borrowed so ruinously as aedile that his creditors tried to stop him leaving Rome to take up his province.",
+ 6:"A praetor held imperium: the legal power to command armies and put citizens to death. Six lictors walked ahead of him carrying the fasces — rods bound around an axe.",
+ 7:"Two consuls held office for one year and each could veto the other. Romans did not number their years; they named them after whichever pair of consuls held office.",
+ 8:"A proconsul kept his imperium as long as he stayed outside Italy. Caesar's command in Gaul ran nine years, and when the Senate ordered him to give it up, he did not.",
+ 9:"Augustus never used the word king. He called himself princeps — first citizen — and ruled for forty years through offices the Republic had always had."
+};
+const RANKS=[
+ {n:"Peasant",l:"Colonus",
+  next:{btn:"Take the farmstead",req:{r:{denarii:150},b:{farmhand:2,oven:1}},
+   ttl:"Agricola",lat:"Rank II",
+   bd:"The old man across the ditch dies without heirs. You buy his plot with coins you earned by hand. You are still nobody — but now you are nobody with land.",
+   gift:{b:{field:1},r:{denarii:60}}}},
+
+ {n:"Farmer",l:"Agricola",
+  next:{btn:"Open a trading house",req:{r:{denarii:1500},b:{baker:2,presser:1,trader:1}},
+   ttl:"Mercator",lat:"Rank III",
+   bd:"You stop counting sacks and start counting ledgers. Other men's hands do the work; your name is on the amphorae.",
+   gift:{r:{denarii:500}},tab:"trade"}},
+
+ {n:"Merchant",l:"Mercator",
+  next:{btn:"Buy into society",req:{r:{denarii:9000},b:{ship:1,warehouse:1}},
+   ttl:"Patronus",lat:"Rank IV",
+   bd:"Money alone is vulgar. You buy a villa on the Caelian, and men in better cloaks begin, grudgingly, to greet you in the forum.",
+   gift:{dig:40},tab:"rome"}},
+
+ {n:"Patron",l:"Patronus",
+  next:{btn:"Stand for quaestor",req:{dig:200,m:{plebs:40},b:{villa:1}},
+   ttl:"Quaestor",lat:"Cursus Honorum I",
+   bd:"You are elected to the treasury. It is the lowest office in Rome and the first that history bothers to record.",
+   gift:{r:{denarii:8000}}}},
+
+ {n:"Quaestor",l:"Quaestor",
+  next:{btn:"Stand for aedile",req:{dig:600,r:{denarii:60000},m:{senate:45}},
+   ttl:"Aedile",lat:"Cursus Honorum II",
+   bd:"Aediles keep the streets, the markets and the games. The games are what the people remember.",
+   gift:{m:{plebs:8}}}},
+
+ {n:"Aedile",l:"Aedilis",
+  next:{btn:"Stand for praetor",req:{dig:1600,m:{plebs:55,senate:55},b:{arena:1}},
+   ttl:"Praetor",lat:"Cursus Honorum III",
+   bd:"With the praetorship comes imperium: the legal right to command armed men. Rome has just handed you a sword and looked away.",
+   gift:{r:{denarii:20000}},tab:"war"}},
+
+ {n:"Praetor",l:"Praetor",
+  next:{btn:"Stand for consul",req:{dig:4000,m:{senate:65},prov:1},
+   ttl:"Consul",lat:"Cursus Honorum IV",
+   bd:"Two consuls rule Rome for one year. Yours will be talked about for rather longer.",
+   gift:{r:{denarii:60000},m:{senate:5}}}},
+
+ {n:"Consul",l:"Consul",
+  next:{btn:"Take a proconsular command",req:{leg:4,prov:2},
+   ttl:"Proconsul",lat:"Rank VIII",
+   bd:"Your year in office ends. You do not go home. You take the provinces, the legions and the silence of the Senate with you.",
+   gift:{m:{loyalty:10}}}},
+
+ {n:"Proconsul",l:"Proconsul",next:null},
+
+ {n:"Emperor",l:"Imperator Augustus",next:null}
+];
+
+/* buildings ─ tab, minimum rank, cost, growth, effects */
+const B=[
+ {id:"field",t:"build",n:"Wheat field",r:0,c:{denarii:15},g:1.30,d:"Cleared ground. Room for one more pair of hands.",cap:{grain:25}},
+ {id:"farmhand",t:"build",n:"Farmhand",r:0,c:{denarii:30},g:1.24,d:"Cuts and threshes while you do something else.",prod:{out:{grain:.5}},slot:{field:1},m:"farmhand"},
+ {id:"woodlot",t:"build",n:"Woodlot",r:0,c:{denarii:40},g:1.30,d:"A stand of pine on the hillside.",cap:{timber:40}},
+ {id:"woodcutter",t:"build",n:"Woodcutter",r:0,c:{denarii:50},g:1.24,d:"Fells and splits while you do something else.",prod:{out:{timber:.5}},slot:{woodlot:1},m:"farmhand"},
+ {id:"shed",t:"build",n:"Storage shed",r:0,c:{timber:30},g:1.55,d:"Keeps the rats and the rain out.",cap:{grain:50,timber:40,flour:25,bread:20,olives:25,oil:20}},
+ {id:"handmill",t:"build",n:"Hand quern",r:0,c:{timber:10},max:1,d:"A stone you turn yourself. Lets you grind grain into flour."},
+ {id:"oven",t:"build",n:"Clay oven",r:0,c:{timber:25},max:1,d:"Lets you bake flour into bread."},
+ {id:"mill",t:"build",n:"Water mill",r:0,c:{denarii:90,timber:35},g:1.32,d:"A millstone turned by the stream. Employs one miller.",cap:{flour:40}},
+ {id:"miller",t:"build",n:"Miller",r:0,c:{denarii:110},g:1.22,d:"Grain into flour, all day.",prod:{in:{grain:1.6},out:{flour:.8}},slot:{mill:1},m:"miller"},
+ {id:"bakery",t:"build",n:"Bakery",r:0,c:{denarii:220,timber:50},g:1.32,d:"Ovens and a counter on the street. Employs one baker.",cap:{bread:35}},
+ {id:"baker",t:"build",n:"Baker",r:0,c:{denarii:240},g:1.22,d:"Flour into bread, before dawn.",prod:{in:{flour:.9},out:{bread:.45}},slot:{bakery:1},m:"baker"},
+ {id:"stall",t:"build",n:"Market stall",r:0,c:{denarii:300},g:1.35,d:"A pitch under the portico. Employs one trader.",cap:{bread:20}},
+ {id:"trader",t:"build",n:"Trader",r:0,c:{denarii:320},g:1.22,d:"Sells your bread and hands you the coin.",prod:{in:{bread:.5},out:{denarii:12}},slot:{stall:1},m:"trader"},
+ {id:"grove",t:"build",n:"Olive grove",r:1,c:{denarii:600},g:1.30,d:"Slow to bear, generous forever.",cap:{olives:40}},
+ {id:"cultivator",t:"build",n:"Cultivator",r:1,c:{denarii:420},g:1.22,d:"Beats the trees and gathers the fall.",prod:{out:{olives:.45}},slot:{grove:1},m:"farmhand"},
+ {id:"press",t:"build",n:"Olive press",r:1,c:{denarii:1100,timber:80},g:1.32,d:"A beam press for the first pressing.",cap:{oil:35}},
+ {id:"presser",t:"build",n:"Presser",r:1,c:{denarii:800},g:1.22,d:"Olives into oil.",prod:{in:{olives:.7},out:{oil:.35}},slot:{press:1},m:"presser"},
+ {id:"oilman",t:"build",n:"Oil merchant",r:1,c:{denarii:1400},g:1.24,d:"Sells oil in sealed amphorae. Better margin than bread.",prod:{in:{oil:.3},out:{denarii:40}},slot:{press:2},m:"trader"},
+ {id:"granary",t:"build",n:"Granary",r:1,c:{denarii:1600,timber:120},g:1.5,d:"Stone floors, raised on pillars.",cap:{grain:1200,flour:250,bread:150}},
+ {id:"warehouse",t:"build",n:"Warehouse",r:2,c:{denarii:4000},g:1.45,d:"A bonded store by the river.",cap:{grain:2000,timber:1500,flour:1000,bread:800,olives:800,oil:800,marble:400}},
+
+ /* upgrades — one-off multipliers */
+ {id:"whet",t:"build",n:"Whetstone and strap",r:0,c:{denarii:120,timber:20},max:1,d:"A sharp edge and a rhythm. Every job by hand comes round 15% sooner.",mm:{cd:.85}},
+ {id:"barrow",t:"build",n:"Wheelbarrow",r:0,c:{denarii:900},max:1,d:"You stop walking back empty-handed. Another 15% off every job by hand.",mm:{cd:.85}},
+ {id:"prentice",t:"build",n:"An apprentice at your elbow",r:1,c:{denarii:6000},max:1,d:"He does the fetching while you do the work. 20% off every job by hand.",mm:{cd:.80}},
+ {id:"sifted",t:"build",n:"Twice-sifted flour",r:1,c:{denarii:5000},max:1,d:"White bread for people who can tell the difference. Everything you sell fetches 25% more.",mm:{sell:1.25,trader:1.25}},
+ {id:"amphora",t:"build",n:"Sealed amphorae",r:1,c:{denarii:14000},max:1,d:"Pitch-sealed and stamped, so the oil arrives as it left. 25% more again.",mm:{sell:1.25,trader:1.25}},
+ {id:"stamp",t:"build",n:"Your own estate stamp",r:2,c:{denarii:70000},max:1,d:"A name pressed into every jar. Buyers pay for names. 30% more.",mm:{sell:1.30,trader:1.30}},
+ {id:"falern",t:"build",n:"Falernian graft",r:3,c:{denarii:400000},max:1,d:"Vines grafted from the best slope in Campania. 40% more on everything you sell.",mm:{sell:1.40,trader:1.40}},
+ {id:"sickle",t:"build",n:"Iron sickle",r:0,c:{denarii:40},max:1,d:"Cuts twice the wheat in the same hour.",mm:{harvest:2}},
+ {id:"axe",t:"build",n:"Felling axe",r:0,c:{denarii:60},max:1,d:"Timber comes twice as fast.",mm:{chop:2}},
+ {id:"plough",t:"build",n:"Ox and plough",r:0,c:{denarii:400,timber:60},max:1,d:"Every farmhand works half again as hard.",mm:{farmhand:1.6}},
+ {id:"wheel",t:"build",n:"Overshot wheel",r:1,c:{denarii:2500},max:1,d:"Millers grind twice as much.",mm:{miller:2}},
+ {id:"brick",t:"build",n:"Brick ovens",r:1,c:{denarii:3000},max:1,d:"Bakers produce 80% more.",mm:{baker:1.8}},
+ {id:"cart",t:"build",n:"Donkey carts",r:1,c:{denarii:2000},max:1,d:"Traders reach further. +60% coin.",mm:{trader:1.6}},
+ {id:"ledger",t:"build",n:"Greek accountant",r:2,c:{denarii:9000},max:1,d:"Every sale returns a third more.",mm:{trader:1.35}},
+ {id:"guild",t:"build",n:"Guild contracts",r:2,c:{denarii:40000},max:1,d:"All production up by half.",mm:{farmhand:1.5,miller:1.5,baker:1.5,presser:1.5}},
+
+ /* trade */
+ {id:"caravan",t:"trade",n:"Mule caravan",r:2,c:{denarii:4000},g:1.4,d:"Each caravan adds 12% to venture profits.",mm:{venture:1.12},stack:true},
+ {id:"barge",t:"trade",n:"River barge",r:2,c:{denarii:6000},g:1.4,d:"Lets one more venture run at the same time.",slotsv:1},
+ {id:"ship",t:"trade",n:"Merchantman",r:2,c:{denarii:9000},g:1.42,d:"Opens the sea routes. One more venture at a time.",slotsv:1},
+ {id:"rigging",t:"trade",n:"Better rigging",r:2,c:{denarii:60000},max:1,d:"Every venture returns 15% sooner.",fast:.85},
+ {id:"harbour",t:"trade",n:"Ostia harbour rights",r:3,c:{denarii:300000},max:1,d:"Your ships unload first. 15% faster again.",fast:.85},
+ {id:"navigator",t:"trade",n:"Weatherwise navigator",r:3,c:{denarii:500000},max:1,d:"He reads the sky. 12% faster and a little safer.",fast:.88,risk:.9},
+ {id:"factor",t:"trade",n:"Freedman factor",r:3,c:{denarii:200000},max:1,d:"A freedman who will run ventures without being asked — and keep a quarter of the profit.",},
+ {id:"relay",t:"trade",n:"Post-horse relays",r:5,c:{denarii:2e6},max:1,d:"Orders travel at the speed of the imperial post. 18% faster.",fast:.82},
+ {id:"marines",t:"trade",n:"Hired marines",r:2,c:{denarii:30000},g:1.6,max:3,d:"Cuts the risk of every voyage by a third.",risk:.66},
+
+ /* rome */
+ {id:"loaded",t:"rome",n:"A set of loaded tali",r:3,c:{denarii:80000},max:1,d:"Weighted knucklebones from a Syrian in the Subura. Venus rather more often than chance allows.",},
+ {id:"villa",t:"rome",n:"Villa on the Caelian",r:3,c:{denarii:15000},max:1,d:"An address the right people recognise.",dig:.5},
+ {id:"client",t:"rome",n:"Client",r:3,c:{denarii:6000},g:1.13,d:"A dependent family. They greet you at dawn and vote as you ask.",dig:.08,inc:120,plebs:.004},
+ {id:"fountain",t:"rome",n:"Public fountain",r:3,c:{denarii:25000},g:1.4,d:"Clean water in a poor quarter, and your name on the basin.",dig:.6,plebs:.02},
+ {id:"bath",t:"rome",n:"Baths",r:3,c:{denarii:90000},g:1.5,d:"Free bathing for the district.",dig:1.6,plebs:.04},
+ {id:"temple",t:"rome",n:"Temple",r:4,c:{denarii:220000,marble:60},g:1.5,d:"Piety, in marble, where everyone can see it.",dig:4,senate:.012},
+ {id:"basilica",t:"rome",n:"Basilica",r:4,c:{denarii:600000,marble:200},g:1.5,d:"Law courts and shade. The Senate approves.",dig:9,senate:.03},
+ {id:"arena",t:"rome",n:"Amphitheatre",r:5,c:{denarii:900000,marble:300},max:1,d:"Your own arena. Makes every games you sponsor twice as loud.",dig:12,plebs:.05,mm:{games:2}},
+
+ /* war */
+ {id:"legion",t:"war",n:"Legion",r:6,c:{denarii:250000,grain:2000},g:1.22,d:"5,000 men. Eats grain and silver whether or not it fights.",leg:1},
+ {id:"centurion",t:"war",n:"Veteran centurions",r:6,c:{denarii:400000},g:1.5,max:6,d:"+25% strength on campaign, each.",mm:{army:1.25},stack:true},
+ {id:"engineer",t:"war",n:"Siege engineers",r:6,c:{denarii:900000},g:1.6,max:4,d:"+20% strength, and fewer men lost in defeat.",mm:{army:1.2},stack:true,save:.85},
+ {id:"cavalry",t:"war",n:"Auxiliary cavalry",r:6,c:{denarii:700000,grain:5000},g:1.5,max:4,d:"+18% strength and faster campaigns.",mm:{army:1.18},stack:true,fast:.9}
+];
+const BID={};B.forEach(x=>BID[x.id]=x);
+
+const ACT=[
+ {id:"harvest",n:"Harvest wheat",cd:1.0,out:{grain:2},m:"harvest",r:0},
+ {id:"chop",n:"Chop timber",cd:1.4,out:{timber:2},m:"chop",r:0},
+ {id:"grind",n:"Grind flour",cd:1.2,in:{grain:4},out:{flour:2},need:"handmill",r:0},
+ {id:"bake",n:"Bake bread",cd:1.2,in:{flour:2},out:{bread:1},need:"oven",r:0},
+ {id:"pick",n:"Pick olives",cd:1.4,out:{olives:2},need:"grove",r:0}
+];
+
+const PRICE={grain:1,timber:2,olives:3,flour:3,bread:12,oil:55,marble:120};
+
+const VENT=[
+ {id:"cross",n:"Cart to the crossroads",r:1,hide:4,t:10,c:{grain:80},out:{denarii:180},risk:.02,d:"A day's haul to the village market."},
+ {id:"inn",n:"Supply the roadside inn",r:1,hide:5,t:14,c:{bread:20,oil:4},out:{denarii:700},risk:.03,d:"Bread and oil for travellers on the Via Latina."},
+ {id:"ostia",n:"Ostia run",r:2,hide:6,t:7,c:{bread:25},out:{denarii:1700},risk:.03,d:"Bread down the road to the port."},
+ {id:"puteoli",n:"Puteoli oil",r:2,hide:7,t:11,c:{oil:20},out:{denarii:7000},risk:.06,d:"Amphorae of first-press oil."},
+ {id:"sicilia",n:"Sicilian grain",r:2,t:13,c:{denarii:2000},out:{grain:5000},risk:.08,d:"Buy cheap where it grows."},
+ {id:"massilia",n:"Massilia timber",r:2,t:17,c:{denarii:6000},out:{timber:2000,denarii:26000},risk:.14,d:"Gaulish wood and Gaulish wine."},
+ {id:"gades",n:"Garum from Gades",r:3,t:18,c:{denarii:12000},out:{denarii:70000},risk:.12,d:"Fish sauce from Baetica. The sharpest margin in the west."},
+ {id:"alex",n:"Alexandria convoy",r:3,t:26,c:{denarii:20000},need:"ship",out:{denarii:190000},risk:.22,d:"Everything Egypt sells, at once."},
+ {id:"athens",n:"Athenian marble",r:3,t:26,c:{denarii:40000},need:"ship",out:{marble:150},risk:.12,d:"Pentelic marble, cut and shipped."},
+ {id:"amber",n:"The Amber Road",r:4,t:34,c:{denarii:90000},out:{denarii:420000},risk:.26,d:"Overland to the Baltic through free Germania."},
+ {id:"silk",n:"Silk by the Parthian road",r:5,t:38,c:{denarii:400000},out:{denarii:1.9e6},risk:.28,d:"Bought at Palmyra from men who will not say where it comes from."},
+ {id:"annona",n:"Army grain contract",r:5,t:26,c:{grain:40000},out:{denarii:900000},risk:.05,d:"Feed the legions on the Rhine and be paid by the state."},
+ {id:"works",n:"Public works contract",r:6,t:30,c:{denarii:600000},out:{marble:700,denarii:900000},risk:.08,d:"Quarry, haul and build for the censors."},
+ {id:"asiatax",n:"Tax farm of Asia",r:7,t:40,c:{denarii:3e6},out:{denarii:1.4e7},risk:.18,d:"Buy the right to squeeze a province dry."},
+ {id:"fleet",n:"The imperial grain fleet",r:9,t:45,c:{denarii:1.4e7},out:{grain:3e6,denarii:3.4e7},risk:.10,d:"Two hundred ships out of Alexandria, every one of them yours."}
+];
+
+/* the men whose road to the purple you might take instead of the legions' */
+const PATHS=[
+ {id:"legions",hold:1.0,n:"The legions",tag:"the beaten road",mult:1.0,
+  d:"Cross the Rubicon with an army at your back and let the Senate work out what to do about it.",
+  req:{leg:8,prov:5,m:{loyalty:75}},
+  odds:()=>clamp(.30+(S.loyalty-70)*.012+S.legions*.028+(50-S.senate)*.003,.15,.92),
+  warn:"If the legions break before the walls, you die on the road south.",
+  win:"The Senate ordered you to disband your army. You crossed the river instead, and the city opened its gates before the first cohort reached the walls.",
+  lose:"Your army broke outside Rome. The Senate had you killed on the road south and voted your memory condemned."},
+ {id:"tribune",hold:1.15,n:"Tribune of the plebs",tag:"populism",mult:1.35,
+  d:"Grain, games and the sacrosanct person of a tribune. Rome has never been able to say no to a hungry crowd.",
+  req:{m:{plebs:95},dig:6000,doles:8},
+  odds:()=>clamp(.35+(S.plebs-80)*.02+(S.dig>12000?.1:0),.2,.9),
+  warn:"The Senate will call you a tyrant and may declare you an enemy of the state before the vote is counted.",
+  win:"Half a million people filled the Forum and would not leave until the Senate gave you what they were shouting for.",
+  lose:"The Senate declared you a public enemy. The mob that carried you did not save you from the men on the Capitol steps."},
+ {id:"republic",hold:0.7,n:"Restore the Republic",tag:"the honest road",mult:1.7,
+  d:"Refuse the crown until the Senate begs you to take it. First among equals, and nothing so vulgar as a king.",
+  req:{m:{senate:90},dig:14000,legMax:2},
+  odds:()=>clamp(.45+(S.senate-85)*.02+(S.legions<=1?.15:0),.25,.95),
+  warn:"Keep fewer than three legions. Any more and the Senate will see a tyrant and act like one.",
+  win:"You handed your provinces back to the Senate. They gave you everything you had handed over, plus a name: Augustus.",
+  lose:"They took the resignation at face value and gave your provinces to somebody else."},
+ {id:"expose",hold:1.0,n:"Expose the Dictator",tag:"prosecution",mult:1.45,
+  d:"Buy the letters, the freedmen and the accountants. Then read all of it aloud in the Forum.",
+  req:{steps:3,m:{plebs:65,senate:60}},
+  steps:[{n:"Buy his freedman's testimony",c:{denarii:900000}},
+         {n:"Purchase the province accounts",c:{denarii:2.5e6}},
+         {n:"Retain the finest advocate in Rome",c:{denarii:6e6}}],
+  odds:()=>clamp(.4+S.senate*.005+S.plebs*.003,.25,.95),
+  warn:"If the courts side with him, the same evidence becomes a charge against you.",
+  win:"You read the accounts for six hours. He left for Rhodes before the vote and never came back.",
+  lose:"His advocates were better than yours. You are exiled to a small island with a view of the sea."},
+ {id:"corrupt",hold:1.3,n:"Corrupt the Dictator",tag:"the purse",mult:1.4,
+  d:"Every man has a price, and a man who has everything is usually the cheapest of all.",
+  req:{steps:3},
+  steps:[{n:"Fund his debts",c:{denarii:3e6}},
+         {n:"Buy his household",c:{denarii:9e6}},
+         {n:"Purchase his abdication",c:{denarii:2.5e7}}],
+  odds:()=>clamp(.55+(S.senate-50)*.004,.35,.95),
+  warn:"He may take the money and keep the throne. There is no court you can complain to.",
+  win:"He signed the abdication at dinner, drunk and delighted, and sailed for Capri in the morning.",
+  lose:"He took every coin, embraced you, and had you removed from the Senate list the same week."},
+ {id:"heir",hold:0.8,n:"Be named heir",tag:"patience",mult:1.25,
+  d:"Adoption made more emperors than any battle did. Be useful, be loyal, and outlive him.",
+  req:{steps:3,m:{senate:70},dig:9000},
+  steps:[{n:"Marry into his house",c:{denarii:1.5e6}},
+         {n:"Serve him faithfully in the provinces",c:{denarii:4e6}},
+         {n:"Fund the games in his name",c:{denarii:9e6}}],
+  odds:()=>clamp(.5+S.senate*.004+(S.dig>18000?.15:0),.3,.95),
+  warn:"His wife has her own son and her own ideas about the succession.",
+  win:"The will was opened in the Forum. Your name was in the first line, and the Praetorians saluted before the reading finished.",
+  lose:"The will named his wife's son. You were dead within the month, of something the doctors called a fever."},
+ {id:"knife",hold:1.4,n:"The knife",tag:"assassination",mult:1.55,
+  d:"Learn the trade yourself. Nobody suspects a senator of doing his own work.",
+  req:{steps:3},
+  steps:[{n:"Train with a Thracian gladiator",c:{denarii:400000}},
+         {n:"Buy a Greek physician's advice on poisons",c:{denarii:1.2e6}},
+         {n:"Suborn a chamberlain",c:{denarii:4e6}}],
+  odds:()=>clamp(.42+(S.plebs>70?.1:0)+(S.senate>60?.1:0),.25,.85),
+  warn:"If the hand shakes, you will be the one on the Gemonian Stairs.",
+  win:"It took one blow in a corridor and eleven more from men who had been waiting to see whether the first one landed.",
+  lose:"The blade turned on his under-tunic. The guards were on you before he stopped shouting."},
+ {id:"arena",hold:1.3,n:"The Colosseum",tag:"the crowd",mult:1.5,
+  d:"Fight in your own arena. No Roman with any dignity would do it, which is exactly why they will love you for it.",
+  req:{b:{arena:1},games:12,m:{plebs:90}},
+  odds:()=>clamp(.4+(S.plebs-85)*.02,.25,.9),
+  warn:"The Senate will never forgive the shame of it, whether you win or die.",
+  win:"Fifty thousand people chanted a name in the arena for an hour, and by evening it was the only name that mattered.",
+  lose:"The Gaul was faster. The crowd was still cheering when they dragged you out through the Gate of Death."},
+ {id:"praetorians",hold:1.6,n:"Buy the Praetorian Guard",tag:"the purse",mult:1.15,
+  d:"Nine cohorts stand between anyone and the throne. They have never pretended to be expensive to talk to.",
+  req:{den:25000000},cost:{denarii:25000000},
+  odds:()=>clamp(.72+S.loyalty*.002,.5,.95),
+  warn:"Men who sell you a throne have shown you exactly what they will do with the next bidder.",
+  win:"They carried you into the camp on their shoulders, counted the silver twice, and hailed you emperor before the Senate had finished lunch.",
+  lose:"They took the donative, laughed, and hailed the man who arrived an hour after you with more."},
+ {id:"auction",hold:1.9,hidden:true,n:"Buy the empire at auction",tag:"the purse",mult:1.1,
+  d:"The guard has killed an emperor and put the world up for sale from the rampart of their camp.",
+  req:{},odds:()=>.95,warn:"",
+  win:"You outbid a senator for the Roman Empire from the foot of the Praetorian rampart, and they opened the gates and saluted.",
+  lose:"Somebody bid higher."},
+ {id:"foreign",hold:1.7,n:"Foreign arms",tag:"treason",mult:2.0,
+  d:"Rome has enemies who would pay handsomely for a Roman who knows where the passes are.",
+  req:{steps:3},
+  steps:[{n:"Open talks beyond the Rhine",c:{denarii:800000}},
+         {n:"Pay the war bands in Roman silver",c:{denarii:5e6}},
+         {n:"Guide them through the passes",c:{denarii:1.2e7}}],
+  odds:()=>clamp(.35+S.legions*.02,.2,.85),
+  warn:"Rome has never forgiven this. Neither will the men you are buying.",
+  win:"The war bands came through the Alpine passes in spring, and you rode into Rome ahead of them so that it would look like a rescue.",
+  lose:"Your allies took the silver, sacked three towns, and sold you to the legate at Vindobona."}
+];
+
+const PROV=[
+ {id:"sicilia",n:"Sicilia",df:220,r:{grain:8},den:3000,d:"The old granary."},
+ {id:"hispania",n:"Hispania",df:520,r:{},den:20000,d:"Silver mines."},
+ {id:"graecia",n:"Graecia",df:460,r:{marble:6},den:12000,dig:.6,d:"Marble and prestige."},
+ {id:"africa",n:"Africa",df:600,r:{grain:22,oil:2},den:16000,d:"Grain and oil."},
+ {id:"gallia",n:"Gallia",df:900,r:{timber:12},den:24000,d:"Long war, deep forests."},
+ {id:"asia",n:"Asia",df:820,r:{},den:45000,d:"The richest tax farm in the world."},
+ {id:"aegyptus",n:"Aegyptus",df:1100,r:{grain:60},den:60000,d:"The grain fleet. Feeds Rome itself."},
+ {id:"britannia",n:"Britannia",df:1500,r:{},den:12000,dig:1.5,d:"Little profit. Enormous glory."},
+ {id:"germania",n:"Germania",df:2200,r:{timber:30},den:8000,rev:2.2,d:"No one holds it for long."}
+];
+const PID={};PROV.forEach(p=>PID[p.id]=p);
+
+const WON=[
+ {id:"aqua",n:"Aqua Claudia",c:{denarii:3e6,marble:300},d:"Water for every quarter of the city.",e:{plebs:12}},
+ {id:"forum",n:"Imperial forum",c:{denarii:7e6,marble:600},d:"A new heart for Rome, with your name on it.",e:{senate:10,dig:200}},
+ {id:"pantheon",n:"Pantheon",c:{denarii:1.4e7,marble:900},d:"A dome the world will not manage again for a thousand years.",e:{dig:600}},
+ {id:"colosseum",n:"Colosseum",c:{denarii:2.2e7,marble:1200},d:"Fifty thousand seats. The people will forgive a great deal.",e:{plebs:22}},
+ {id:"roads",n:"Roads to the frontiers",c:{denarii:3e7},d:"Every province three weeks closer.",e:{loyalty:12}},
+ {id:"palace",n:"Palatine palace",c:{denarii:4.5e7,marble:1500},d:"Where emperors will live until there are no more emperors.",e:{dig:2000}}
+];
+
+/* ============================ state ============================ */
+let S,M={},CAP={},IDLE={},RATE={},STARVE={},UPD=[],tabsBuilt="",chipEls={},chipSig="";
+function fresh(){
+ return{
+  v:1,t:0,rank:0,r:{grain:0,timber:0,olives:0,flour:0,bread:0,oil:0,marble:0,denarii:0},
+  b:{},seen:{grain:1,timber:1},dig:0,plebs:15,senate:5,loyalty:65,consp:0,
+  prov:{},voy:{},camp:null,won:{},tab:"work",dead:false,victory:false,
+  evT:70,revT:240,unpaid:0,heir:false,purges:0,reign:0,legions:0,
+  auto:{},path:null,pstep:{},doles:0,games:0,peak:0,fama:0,waves:0,pressure:0,
+  decline:false,waveT:0,rival:null,rivalT:120,dictator:null,gambled:0,warnOff:false,
+  ventInc:0,ventTot:0,ventT:0,ending:null,tribute:0,found:0,hold:1,aucT:200,goodwill:60,giftT:14,shun:0,shunned:[]
+ };
+}
+S=fresh();
+
+/* ============================ derived ============================ */
+function recompute(){
+ M={harvest:1,chop:1,sell:1,cd:1,farmhand:1,miller:1,baker:1,presser:1,trader:1,venture:1,army:1,games:1};
+ let risk=1,save=1,fast=1,slots=1;
+ for(const d of B){
+  const n=S.b[d.id]||0;if(!n)continue;
+  if(d.mm)for(const k in d.mm)M[k]*=d.stack?Math.pow(d.mm[k],n):d.mm[k];
+  if(d.risk)risk*=Math.pow(d.risk,n);
+  if(d.save)save*=Math.pow(d.save,n);
+  if(d.fast)fast*=Math.pow(d.fast,n);
+  if(d.slotsv)slots+=d.slotsv*n;
+ }
+ M.risk=risk;M.save=save;M.fast=fast;M.slots=slots;
+ const R=1+.09*(S.shun||0);   /* nothing given away, and something to prove */
+ ["farmhand","miller","baker","presser","trader","harvest","chop"].forEach(k=>M[k]*=R);
+ M.ruthless=R;
+ M.sell*=Math.sqrt(M.trader);
+ /* a workplace that burns down or is sold takes its workers with it */
+ for(const d of B){
+  if(!d.slot)continue;
+  let mx=Infinity;
+  for(const k in d.slot)mx=Math.min(mx,Math.floor((S.b[k]||0)/d.slot[k]));
+  const n=S.b[d.id]||0;
+  if(n>mx){S.b[d.id]=mx;if(S.t>2)log((n-mx)+" "+d.n.toLowerCase()+(n-mx>1?"s have":" has")+" nowhere left to work.","bad")}
+ }
+ CAP={grain:40,timber:60,olives:20,flour:20,bread:15,oil:15,marble:400,denarii:Infinity};
+ for(const d of B){const n=S.b[d.id]||0;if(n&&d.cap)for(const k in d.cap)CAP[k]+=d.cap[k]*n;}
+ /* losing a store must not leave goods sitting above the new limit */
+ for(const k in S.r){if(CAP[k]!==Infinity&&S.r[k]>CAP[k])S.r[k]=CAP[k]}
+ S.legions=S.b.legion||0;
+}
+const provList=()=>Object.keys(S.prov);
+function has(c,mul){for(const k in c){const need=c[k]*(mul||1);if((k==="denarii"?S.r.denarii:S.r[k])<need)return false}return true}
+function pay(c,mul){for(const k in c)S.r[k]-=c[k]*(mul||1)}
+function cost(d){
+ const n=S.b[d.id]||0,o={};
+ for(const k in d.c)o[k]=Math.ceil(d.c[k]*Math.pow(d.g||1,n));
+ return o;
+}
+const HS_AT=200000; /* Romans counted big money in sesterces: 1 denarius = 4 HS */
+function money(v){return v>=HS_AT?"HS "+fmt(v*4):fmt(v)+" denarii"}
+function amount(k,v){return k==="denarii"?money(v):fmt(v)+" "+NAMES[k]}
+function costStr(c){return Object.keys(c).map(k=>amount(k,c[k])).join(" · ")}
+function gain(k,v){
+ if(k==="denarii"){S.r.denarii+=v;S.seen.denarii=1;return}
+ if(k==="dig"){S.dig+=v;return}
+ if(k in S.r){S.r[k]=Math.min(CAP[k],S.r[k]+v);S.seen[k]=1;return}
+ if(k==="plebs"||k==="senate"||k==="loyalty"||k==="consp")S[k]=clamp(S[k]+v,0,100);
+}
+function blocked(d){
+ if(d.max&&(S.b[d.id]||0)>=d.max)return"owned";
+ if(d.slot)for(const k in d.slot){const cap=(S.b[k]||0)*(1/d.slot[k]);if((S.b[d.id]||0)>=Math.floor(cap))return"needs a "+BID[k].n.toLowerCase()}
+ return null;
+}
+
+/* ============================ log ============================ */
+let lastLog=null,lastLogN=1,HIST=[];
+function log(t,c){
+ const L=$("#log");
+ HIST.unshift({t:t,c:c||"",y:year()});if(HIST.length>80)HIST.pop();
+ if(lastLog&&lastLog.txt===t&&lastLog.el.parentNode===L){
+  lastLogN++;lastLog.el.textContent=t+" ×"+lastLogN;lastLog.el.classList.remove("out");
+  clearTimeout(lastLog.timer);lastLog.timer=setTimeout(()=>fadeLog(lastLog.el),16000);
+  return;
+ }
+ const d=document.createElement("div");
+ d.textContent=t;if(c)d.className=c;
+ L.insertBefore(d,L.firstChild);
+ while(L.children.length>3)L.removeChild(L.children[L.children.length-1]);
+ lastLogN=1;
+ lastLog={txt:t,el:d,timer:setTimeout(()=>fadeLog(d),16000)};
+}
+function fadeLog(d){if(!d)return;d.classList.add("out");setTimeout(()=>{if(d.remove)d.remove()},900)}
+function ringAt(x,y){
+ const r=document.createElement("div");r.className="ring";
+ r.style.left=x+"px";r.style.top=y+"px";
+ document.body.appendChild(r);setTimeout(()=>r.remove(),460);
+}
+function floatUp(e,txt,col){
+ const s=document.createElement("div");s.className="float";s.textContent=txt;
+ if(col)s.style.color=col;
+ const r=e.getBoundingClientRect();
+ s.style.left=(r.left+r.width/2)+"px";s.style.top=(r.top+8)+"px";
+ document.body.appendChild(s);setTimeout(()=>s.remove(),900);
+}
+
+/* ============================ tick ============================ */
+function produce(dt){
+ IDLE={};RATE={};
+ for(const d of B){
+  const n=S.b[d.id]||0;if(!n||!d.prod)continue;
+  const amt=n*(d.m?M[d.m]:1)*dt;
+  let f=1,lack=null;
+  if(d.prod.in)for(const k in d.prod.in){
+   const need=d.prod.in[k]*amt;if(need<=0)continue;
+   const have=Math.max(0,S.r[k]);
+   if(have<need){const ff=have/need;if(ff<f){f=ff;lack="short of "+NAMES[k]}}
+  }
+  for(const k in d.prod.out){
+   if(k==="denarii")continue;
+   const g=d.prod.out[k]*amt;if(g<=0)continue;
+   const space=Math.max(0,CAP[k]-S.r[k]);
+   if(space<g){const ff=space/g;if(ff<f){f=ff;lack=NAMES[k]+" stores full"}}
+  }
+  f=clamp(f,0,1);RATE[d.id]=f;
+  if(f<.97&&lack){IDLE[d.id]=lack;starving(d,f,lack,dt)}
+  else STARVE[d.id]=0;
+  if(f<=0)continue;
+  if(d.prod.in)for(const k in d.prod.in)S.r[k]=Math.max(0,S.r[k]-d.prod.in[k]*amt*f);
+  for(const k in d.prod.out)gain(k,d.prod.out[k]*amt*f);
+ }
+}
+/* one gentle nudge when a worker has been stalled for a while, never a stream of them */
+function starving(d,f,lack,dt){
+ if(f>.05)return;
+ STARVE[d.id]=(STARVE[d.id]||0)+dt;
+ if(STARVE[d.id]<10)return;
+ STARVE[d.id]=-40;
+ const src=d.prod.in?Object.keys(d.prod.in)[0]:null;
+ const fix=src?({grain:"farmhands",flour:"millers",bread:"bakers",olives:"cultivators",oil:"pressers"})[src]:null;
+ log("Your "+d.n.toLowerCase()+"s are idle — "+lack+(fix?". Hire more "+fix+".":". Build more storage."),"bad");
+}
+function tick(dt){
+ if(S.dead)return;
+ S.t+=dt;
+ produce(dt);
+ /* passive from rome */
+ let dig=0,inc=0,pl=0,sen=0;
+ for(const d of B){const n=S.b[d.id]||0;if(!n)continue;
+  if(d.dig)dig+=d.dig*n;if(d.inc)inc+=d.inc*n;if(d.plebs)pl+=d.plebs*n;if(d.senate)sen+=d.senate*n;}
+ S.dig=Math.max(0,S.dig+dig*dt);if(inc)gain("denarii",inc*dt);
+ /* provinces */
+ for(const id of provList()){
+  const p=PID[id];
+  for(const k in p.r)gain(k,p.r[k]*dt);
+  gain("denarii",p.den*dt);if(p.dig)S.dig+=p.dig*dt;
+ }
+ /* legions upkeep */
+ if(S.legions>0){
+  const dn=S.legions*800*dt,gr=S.legions*3*dt;
+  if(S.r.denarii>=dn&&S.r.grain>=gr){S.r.denarii-=dn;S.r.grain-=gr;S.unpaid=0;S.loyalty=clamp(S.loyalty+.25*dt,0,100)}
+  else{S.r.denarii=Math.max(0,S.r.denarii-dn);S.r.grain=Math.max(0,S.r.grain-gr);
+   S.loyalty=clamp(S.loyalty-2.2*dt,0,100);S.unpaid+=dt;
+   if(S.unpaid>6){S.unpaid=0;log("The legions have not been paid.","bad")}}
+ }
+ /* social drift */
+ if(S.rank>=3){
+  S.plebs=clamp(S.plebs+(pl-.05)*dt,0,100);
+  S.senate=clamp(S.senate+(sen-.03)*dt,0,100);
+ }
+ /* voyages */
+ for(const id in S.voy){const v=S.voy[id];v.t-=dt;if(v.t<=0)resolveVoy(id)}
+ autoVoyages();
+ giftTick(dt);
+ rivalTick(dt);
+ declineTick(dt);
+ auctionTick(dt);
+ if(S.rank>S.peak)S.peak=S.rank;
+ /* campaign */
+ if(S.camp){S.camp.t-=dt;if(S.camp.t<=0)resolveCamp()}
+ /* emperor */
+ if(S.rank>=9){
+  S.reign+=dt;
+  const heat=((55-S.senate)*.010+(45-S.plebs)*.008+(70-S.loyalty)*.006+S.purges*.06)*(S.hold||1)+((S.hold||1)>1.25?.05:0);
+  S.consp=clamp(S.consp+Math.max(-.35,heat)*dt,0,100);
+  if(Math.random()<Math.pow(S.consp/100,3)*.02*dt)plot();
+ }
+ /* events */
+ if(S.rank>=1&&!$("#modal").classList.contains("on")){
+  S.evT-=dt;
+  if(S.evT<=0){S.evT=rnd(55,95);doEvent()}
+ }
+ if(S.rank>=7&&provList().length){
+  S.revT-=dt;
+  if(S.revT<=0){S.revT=rnd(150,260);maybeRevolt()}
+ }
+}
+
+/* ============================ ventures ============================ */
+function startVoy(v,auto){
+ if(S.voy[v.id])return;
+ if(Object.keys(S.voy).length>=M.slots){if(!auto)log("No more ships or crews free.","bad");return}
+ if(!has(v.c)){if(!auto)log("You cannot cover that cargo.","bad");return}
+ pay(v.c);
+ const t=v.t*M.fast;
+ S.voy[v.id]={t:t,tot:t,cut:auto?.75:1};
+ if(!auto){sfx("buy");log("The "+v.n.toLowerCase()+" sets out.");render()}
+}
+function resolveVoy(id){
+ const v=VENT.find(x=>x.id===id);const run=S.voy[id]||{cut:1};delete S.voy[id];
+ if(Math.random()<v.risk*M.risk){
+  sfx("bad");
+  log(pick(["Pirates took the "+v.n.toLowerCase()+".","Storms off the coast. Cargo lost.","The cargo never arrived. No one will say why."]),"bad");
+ }else{
+  const mul=M.venture*(run.cut||1);let str=[];
+  for(const k in v.out){gain(k,v.out[k]*mul);str.push(amount(k,v.out[k]*mul))}
+  if(v.out.denarii)S.ventInc=S.ventInc*.7+(v.out.denarii*mul/Math.max(1,v.t*M.fast))*.3;
+  sfx("coin");
+  log(v.n+" returns: "+str.join(", ")+((run.cut||1)<1?" (the factor kept his quarter)":""),"gd");
+ }
+ render();
+}
+function autoVoyages(){
+ if(!S.b.factor)return;
+ for(const v of VENT){
+  if(!S.auto[v.id]||S.voy[v.id])continue;
+  if(S.rank<v.r||(v.hide&&S.rank>=v.hide))continue;
+  if(v.need&&!(S.b[v.need]||0))continue;
+  if(Object.keys(S.voy).length>=M.slots)return;
+  if(has(v.c))startVoy(v,true);
+ }
+}
+
+/* ============================ sound ============================ */
+let AC=null,SOUND=true,MUSIC=true,MG=null,NOISE=null;
+function audioInit(){
+ if(AC)return;
+ try{
+  AC=new (window.AudioContext||window.webkitAudioContext)();
+  MG=AC.createGain();MG.gain.value=.15;MG.connect(AC.destination);
+  const len=AC.sampleRate*.5,b=AC.createBuffer(1,len,AC.sampleRate),d=b.getChannelData(0);
+  for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2);
+  NOISE=b;
+ }catch(e){AC=null}
+}
+function tone(f,dur,type,vol,slide,dest){
+ if(!AC)return;
+ try{
+  const o=AC.createOscillator(),g=AC.createGain(),t=AC.currentTime;
+  o.type=type||"triangle";o.frequency.setValueAtTime(f,t);
+  if(slide)o.frequency.exponentialRampToValueAtTime(slide,t+dur);
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol||.12,t+.008);
+  g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  o.connect(g);g.connect(dest||AC.destination);o.start(t);o.stop(t+dur+.02);
+ }catch(e){}
+}
+function choir(t0){
+ if(!AC)return;
+ const t=t0||AC.currentTime;
+ [146.83,220,293.66,349.23].forEach((f,i)=>{
+  for(let d=0;d<2;d++){
+   try{
+    const o=AC.createOscillator(),g=AC.createGain(),lp=AC.createBiquadFilter();
+    o.type="sawtooth";o.frequency.setValueAtTime(f*(d?1.006:.994),t);
+    lp.type="lowpass";lp.frequency.setValueAtTime(700,t);
+    lp.frequency.linearRampToValueAtTime(1500,t+.7);
+    g.gain.setValueAtTime(0,t);
+    g.gain.linearRampToValueAtTime(.055,t+.35+i*.05);
+    g.gain.linearRampToValueAtTime(.045,t+1.4);
+    g.gain.exponentialRampToValueAtTime(.0001,t+2.6);
+    o.connect(lp);lp.connect(g);g.connect(AC.destination);
+    o.start(t+i*.04);o.stop(t+2.7);
+   }catch(e){}
+  }
+ });
+}
+function sfx(kind){
+ if(!SOUND)return;audioInit();if(!AC)return;
+ if(kind==="tap")tone(520,.06,"triangle",.07,660);
+ else if(kind==="work"){tone(180,.09,"sawtooth",.06);tone(700,.05,"triangle",.05)}
+ else if(kind==="coin"){tone(1180,.05,"square",.05);setTimeout(()=>tone(1760,.09,"square",.045),45)}
+ else if(kind==="buy"){tone(240,.10,"sawtooth",.09,320);setTimeout(()=>tone(880,.10,"triangle",.06),60)}
+ else if(kind==="good"){[523,659,784].forEach((f,i)=>setTimeout(()=>tone(f,.22,"triangle",.07),i*70))}
+ else if(kind==="bad")tone(150,.32,"sawtooth",.10,90);
+ else if(kind==="rank"){choir();[392,523,659,784,1047].forEach((f,i)=>setTimeout(()=>tone(f,.5,"triangle",.06),i*110))}
+ else if(kind==="choir")choir();
+ else if(kind==="dice"){[1,2,3].forEach(i=>setTimeout(()=>tone(300+Math.random()*500,.04,"square",.05),i*55))}
+ else if(kind==="jackpot"){
+  [523,659,784,1047,1319,1568].forEach((f,i)=>setTimeout(()=>tone(f,.28,"triangle",.075),i*55));
+  setTimeout(()=>{tone(1976,.5,"square",.05);tone(2637,.5,"triangle",.04)},380);
+ }
+ else if(kind==="gift"){[659,880,1047].forEach((f,i)=>setTimeout(()=>tone(f,.18,"triangle",.06),i*80))}
+}
+/* ---- the score: tympanum, cornu drone, tibia, lyre. 16 bars, about 43 seconds ---- */
+const BPM=88,BEAT=60/BPM,BAR=BEAT*4;
+const PHR=[146.83,155.56,174.61,196,220,233.08,261.63,293.66,311.13,349.23,392,440];
+let musicTimer=null,barIx=0,nextBar=0;
+function mDrum(t,deep,vol){
+ if(!AC)return;
+ try{
+  const o=AC.createOscillator(),g=AC.createGain();
+  o.type="sine";o.frequency.setValueAtTime(deep?108:150,t);
+  o.frequency.exponentialRampToValueAtTime(deep?42:60,t+.22);
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.006);
+  g.gain.exponentialRampToValueAtTime(.0001,t+(deep?.42:.22));
+  o.connect(g);g.connect(MG);o.start(t);o.stop(t+.5);
+  if(NOISE){
+   const src=AC.createBufferSource(),ng=AC.createGain(),f=AC.createBiquadFilter();
+   src.buffer=NOISE;f.type="lowpass";f.frequency.value=deep?900:2200;
+   ng.gain.setValueAtTime(vol*.5,t);ng.gain.exponentialRampToValueAtTime(.0001,t+.14);
+   src.connect(f);f.connect(ng);ng.connect(MG);src.start(t);src.stop(t+.2);
+  }
+ }catch(e){}
+}
+function mVoice(t,f,dur,type,vol,attack){
+ if(!AC)return;
+ try{
+  const o=AC.createOscillator(),g=AC.createGain(),lp=AC.createBiquadFilter();
+  o.type=type;o.frequency.setValueAtTime(f,t);
+  lp.type="lowpass";lp.frequency.value=type==="sawtooth"?900:2600;
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+(attack||.03));
+  g.gain.setValueAtTime(vol,t+dur*.7);
+  g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  o.connect(lp);lp.connect(g);g.connect(MG);o.start(t);o.stop(t+dur+.05);
+ }catch(e){}
+}
+const MEL_A=[[0,7,1.5],[1.5,6,.5],[2,5,1],[3,4,1]];
+const MEL_B=[[0,4,.75],[.75,5,.75],[1.5,7,1.5],[3,6,1]];
+const MEL_C=[[0,9,1],[1,7,1],[2,8,1],[3,7,.5],[3.5,5,.5]];
+function scheduleBar(b,t){
+ if(!AC||!MG)return;
+ const heavy=b>=12,mid=b>=4;
+ mDrum(t,true,heavy?.5:.36);
+ mDrum(t+BEAT*2,true,heavy?.42:.30);
+ if(mid){mDrum(t+BEAT*1.5,false,.16);mDrum(t+BEAT*3.5,false,.2)}
+ if(heavy)mDrum(t+BEAT*3.25,false,.14);
+ if(b%4===0){
+  const root=b<8?73.42:82.41;
+  mVoice(t,root,BAR*4,"sawtooth",.06,1.1);
+  mVoice(t,root*1.5,BAR*4,"sawtooth",.035,1.4);
+ }
+ if(b>=4&&b<8){const p=MEL_A;p.forEach(n=>mVoice(t+n[0]*BEAT,PHR[n[1]],n[2]*BEAT*.95,"triangle",.075,.06))}
+ if(b>=8&&b<12){
+  const arp=[7,9,11,9];
+  for(let i=0;i<8;i++)mVoice(t+i*BEAT*.5,PHR[arp[i%4]]*(i>3?.5:1),.28,"triangle",.045,.005);
+  if(b===11)MEL_B.forEach(n=>mVoice(t+n[0]*BEAT,PHR[n[1]],n[2]*BEAT*.9,"triangle",.07,.06));
+ }
+ if(b>=12){const p=(b%2)?MEL_C:MEL_A;p.forEach(n=>mVoice(t+n[0]*BEAT,PHR[n[1]],n[2]*BEAT*.95,"triangle",.085,.05))}
+}
+function musicStart(){
+ if(!MUSIC)return;audioInit();
+ if(!AC||musicTimer)return;
+ try{if(AC.state==="suspended")AC.resume()}catch(e){}
+ nextBar=AC.currentTime+.15;barIx=0;
+ musicTimer=setInterval(()=>{
+  if(!AC)return;
+  while(nextBar<AC.currentTime+1.5){scheduleBar(barIx%16,nextBar);nextBar+=BAR;barIx++}
+ },250);
+}
+function musicStop(){if(musicTimer){clearInterval(musicTimer);musicTimer=null}}
+
+/* ============================ the market ============================ */
+function sellRes(k,q){
+ const have=Math.floor(S.r[k]);q=Math.min(q,have);
+ if(q<=0)return 0;
+ S.r[k]-=q;
+ const v=q*PRICE[k]*M.sell;
+ gain("denarii",v);
+ return v;
+}
+
+/* ============================ the ledger ============================ */
+function flow(k){
+ let prod=0,cons=0;
+ for(const d of B){
+  const n=S.b[d.id]||0;if(!n||!d.prod)continue;
+  const m=n*(d.m?M[d.m]:1);
+  if(d.prod.out[k])prod+=d.prod.out[k]*m;
+  if(d.prod.in&&d.prod.in[k])cons+=d.prod.in[k]*m;
+ }
+ for(const id of provList()){const p=PID[id];if(p.r[k])prod+=p.r[k]}
+ if(k==="grain"&&S.legions)cons+=S.legions*3;
+ return{prod,cons};
+}
+function ledger(){
+ const rows=[];let net=0;
+ for(const d of B){
+  const n=S.b[d.id]||0;if(!n||!d.prod||!d.prod.out.denarii)continue;
+  const v=d.prod.out.denarii*n*(d.m?M[d.m]:1)*(RATE[d.id]===undefined?1:RATE[d.id]);
+  rows.push([d.n+" ×"+n,v]);net+=v;
+ }
+ let cl=0;for(const d of B){const n=S.b[d.id]||0;if(n&&d.inc)cl+=d.inc*n}
+ if(cl){rows.push(["Clients",cl]);net+=cl}
+ let pv=0;for(const id of provList())pv+=PID[id].den;
+ if(pv){rows.push(["Provinces ×"+provList().length,pv]);net+=pv}
+ if(S.ventInc>0){rows.push(["Ventures (average)",S.ventInc]);net+=S.ventInc}
+ if(S.legions){rows.push(["Legion pay ×"+S.legions,-S.legions*800]);net-=S.legions*800}
+ rows.sort((a,b)=>Math.abs(b[1])-Math.abs(a[1]));
+ return{rows,net};
+}
+
+/* ============================ hiring sense ============================ */
+function hireWarning(d){
+ if(S.warnOff||!d.prod||!d.prod.in)return null;
+ for(const k in d.prod.in){
+  const f=flow(k),extra=d.prod.in[k]*(d.m?M[d.m]:1);
+  if(f.cons+extra>f.prod+1e-9){
+   const src=({grain:"farmhands",flour:"millers",bread:"bakers",olives:"cultivators",oil:"pressers"})[k];
+   return{res:k,need:fmt(f.cons+extra),have:fmt(f.prod),src:src};
+  }
+ }
+ return null;
+}
+
+/* ============================ dice and horses ============================ */
+const FACTIONS=[["Prasina","the Greens"],["Veneta","the Blues"],["Russata","the Reds"],["Albata","the Whites"]];
+function stakeSizes(){
+ const d=S.r.denarii;
+ return [["Modest",Math.max(50,Math.floor(d*.02))],["Bold",Math.max(200,Math.floor(d*.10))],["Reckless",Math.max(500,Math.floor(d*.33))]];
+}
+let FEED=[],gameBusy=false;
+function feed(t,c){FEED.unshift({t:t,c:c||""});if(FEED.length>7)FEED.pop()}
+function aedileFine(stake){
+ if(S.rank>=4&&Math.random()<.05){
+  const fine=Math.floor(stake*2);
+  S.r.denarii=Math.max(0,S.r.denarii-fine);S.dig=Math.max(0,S.dig-60);
+  feed("The aediles fine you "+money(fine)+" for dicing outside Saturnalia.","bad");
+ }
+}
+function throwTali(stake){
+ if(S.r.denarii<stake||stake<=0)return null;
+ S.r.denarii-=stake;
+ const faces=[1,3,4,6],d=[pick(faces),pick(faces),pick(faces),pick(faces)];
+ const c={};d.forEach(x=>c[x]=(c[x]||0)+1);
+ const vals=Object.values(c).sort((a,b)=>b-a);
+ const loaded=S.b.loaded?Math.random()<.28:false;
+ let mult=0,name="";
+ if(loaded){d[0]=1;d[1]=3;d[2]=4;d[3]=6;mult=5;name="Venus"}
+ else if(vals[0]===1){mult=5;name="Venus!"}
+ else if(vals[0]===4){if(d[0]===1){mult=0;name="The dogs"}else{mult=14;name="Four alike"}}
+ else if(vals[0]===3){mult=1.5;name="Three alike"}
+ else{mult=0;name="Nothing"}
+ const won=Math.floor(stake*mult);
+ S.gambled+=won-stake;
+ if(won>0)gain("denarii",won);
+ else if(name==="The dogs")S.dig=Math.max(0,S.dig-20);
+ aedileFine(stake);
+ return{d:d,name:name,won:won,stake:stake};
+}
+function betRace(fi,stake){
+ if(S.r.denarii<stake||stake<=0)return null;
+ S.r.denarii-=stake;
+ const odds=[2.6,3.2,4.4,6.0],chance=[.38,.31,.20,.11];
+ let winner=0,roll=Math.random(),acc=0;
+ for(let i=0;i<4;i++){acc+=chance[i];if(roll<acc){winner=i;break}}
+ const hit=winner===fi;
+ const w=hit?Math.floor(stake*odds[fi]):0;
+ if(hit)gain("denarii",w);
+ S.gambled+=w-stake;
+ return{winner:winner,hit:hit,w:w,stake:stake};
+}
+const GLAD=[["Flamma","Thraex"],["Spiculus","Murmillo"],["Priscus","Retiarius"],["Verus","Secutor"],
+ ["Tetraites","Provocator"],["Columbus","Hoplomachus"],["Crixus","Gaul"],["Hermes","Secutor"]];
+function makeCard(){
+ const a=pick(GLAD);let b=pick(GLAD);let n=0;
+ while(b[0]===a[0]&&n++<8)b=pick(GLAD);
+ const pa=rnd(.35,.65);
+ return{a:a,b:b,pa:pa,oa:+(1/pa*.88).toFixed(2),ob:+(1/(1-pa)*.88).toFixed(2)};
+}
+let CARD=makeCard();
+function betArena(side,stake){
+ if(S.r.denarii<stake||stake<=0)return null;
+ S.r.denarii-=stake;
+ const aWins=Math.random()<CARD.pa;
+ const hit=(side===0)===aWins;
+ const w=hit?Math.floor(stake*(side===0?CARD.oa:CARD.ob)):0;
+ if(hit)gain("denarii",w);
+ S.gambled+=w-stake;
+ const blows=[];let ha=100,hb=100;
+ while(ha>0&&hb>0){
+  if(Math.random()<(aWins?.62:.38))hb-=Math.round(rnd(9,26));else ha-=Math.round(rnd(9,26));
+  blows.push([Math.max(0,ha),Math.max(0,hb)]);
+  if(blows.length>26)break;
+ }
+ if(aWins)blows.push([Math.max(1,ha),0]);else blows.push([0,Math.max(1,hb)]);
+ return{aWins:aWins,hit:hit,w:w,blows:blows,stake:stake};
+}
+function tavernEl(){
+ const w=document.createElement("div");
+ /* stake */
+ const pickRow=document.createElement("div");pickRow.className="mrow";
+ pickRow.innerHTML='<span class="mn">Your stake<b></b></span>';
+ const sub=pickRow.querySelector("b");
+ const btns=stakeSizes().map((sz,i)=>{
+  const b=document.createElement("button");b.className="wide";b.textContent=sz[0];
+  b.onclick=()=>{stakeIx=i;sfx("tap");UPD.forEach(f=>f())};
+  pickRow.appendChild(b);return b;
+ });
+ w.appendChild(pickRow);
+ const stake=()=>stakeSizes()[stakeIx][1];
+ const afford=()=>S.r.denarii>=stake();
+
+ /* the house feed */
+ const fb=document.createElement("div");fb.className="feedbox";
+ w.appendChild(fb);
+ const drawFeed=()=>{
+  fb.innerHTML=FEED.length?FEED.map(f=>'<div class="'+f.c+'">'+f.t+'</div>').join("")
+   :'<div class="dim">The table is waiting.</div>';
+ };
+ drawFeed();
+
+ /* tali */
+ w.appendChild(sec("Tali"));
+ const dice=document.createElement("div");dice.className="dice";dice.textContent="· · · ·";
+ w.appendChild(dice);
+ const dres=document.createElement("div");dres.className="gres";dres.textContent="Four knucklebones. All different is the Venus (5×). Four alike pays 14×. Three alike returns half again. Four ones are the dogs.";
+ w.appendChild(dres);
+ const tali=document.createElement("button");tali.className="quick";
+ tali.innerHTML='<span>Throw the tali</span><b></b>';
+ tali.onclick=()=>{
+  if(gameBusy||!afford())return;
+  const st=stake(),r=throwTali(st);
+  if(!r)return;
+  gameBusy=true;sfx("dice");buzz(6);
+  let n=0;
+  const id=setInterval(()=>{
+   dice.textContent=[0,1,2,3].map(()=>pick([1,3,4,6])).join("  ");
+   if(++n>=12){
+    clearInterval(id);
+    dice.textContent=r.d.join("  ");
+    dice.classList.remove("winflash");void dice.offsetWidth;
+    if(r.won>0){dice.classList.add("winflash");sfx(r.won>=st*5?"jackpot":"coin");
+     dres.className="gres good";dres.textContent=r.name+" — you take "+money(r.won);
+     feed(r.d.join("-")+"  "+r.name+" · +"+money(r.won),"gd");
+    }else{sfx("bad");dres.className="gres warn";dres.textContent=r.name+" — "+money(st)+" gone";
+     feed(r.d.join("-")+"  "+r.name+" · −"+money(st),"bad")}
+    drawFeed();gameBusy=false;UPD.forEach(f=>f());
+   }
+  },60);
+ };
+ w.appendChild(tali);
+
+ /* the races */
+ w.appendChild(sec("The races"));
+ const track=document.createElement("div");track.className="track";
+ const lanes=FACTIONS.map((f,i)=>{
+  const row=document.createElement("div");row.className="lane";
+  row.innerHTML='<span class="lname">'+f[0]+'</span><span class="lbar"><i></i></span>';
+  row.querySelector("i").style.background=["#7d9a83","#5b7ba0","#b0442e","#d8cdb6"][i];
+  track.appendChild(row);return row.querySelector("i");
+ });
+ w.appendChild(track);
+ const rres=document.createElement("div");rres.className="gres";
+ rres.textContent="Seven laps of the spina. The Greens are the crowd's, the Blues are the Senate's.";
+ w.appendChild(rres);
+ FACTIONS.forEach((f,i)=>{
+  const row=document.createElement("div");row.className="mrow";
+  const lab=document.createElement("span");lab.className="mn";
+  lab.innerHTML='<span>'+f[0]+'</span><b>'+f[1]+' — pays '+[2.6,3.2,4.4,6.0][i]+'×</b>';
+  row.appendChild(lab);
+  const b=document.createElement("button");b.className="wide";b.textContent="bet";
+  b.onclick=()=>{
+   if(gameBusy||!afford())return;
+   const st=stake(),r=betRace(i,st);
+   if(!r)return;
+   gameBusy=true;sfx("dice");buzz(5);
+   const pos=[0,0,0,0],t0=Date.now();
+   rres.className="gres";rres.textContent="They are away…";
+   const id=setInterval(()=>{
+    const el=(Date.now()-t0)/1900;
+    for(let k=0;k<4;k++){
+     const bias=k===r.winner?1.0:.86;
+     pos[k]=Math.min(100,(el*100*bias)+Math.sin(el*7+k)*4);
+     lanes[k].style.width=Math.max(0,pos[k])+"%";
+    }
+    if(el>=1){
+     clearInterval(id);
+     lanes.forEach((l,k)=>l.style.width=(k===r.winner?100:rnd(78,94))+"%");
+     if(r.hit){sfx("coin");rres.className="gres good";
+      rres.textContent=FACTIONS[r.winner][1]+" take the palm — +"+money(r.w);
+      feed(FACTIONS[r.winner][0]+" win · +"+money(r.w),"gd");
+     }else{sfx("bad");rres.className="gres warn";
+      rres.textContent=FACTIONS[r.winner][1]+" take the palm. Your "+money(st)+" is gone.";
+      feed(FACTIONS[r.winner][0]+" win · −"+money(st),"bad")}
+     drawFeed();gameBusy=false;UPD.forEach(f=>f());
+    }
+   },40);
+  };
+  row.appendChild(b);w.appendChild(row);
+ });
+
+ /* the arena */
+ if(S.rank>=2){
+  w.appendChild(sec("The arena"));
+  const fight=document.createElement("div");fight.className="track";
+  const bars=[0,1].map(i=>{
+   const g=i?CARD.b:CARD.a;
+   const row=document.createElement("div");row.className="lane";
+   row.innerHTML='<span class="lname">'+g[0]+'</span><span class="lbar"><i></i></span>';
+   const bar=row.querySelector("i");bar.style.width="100%";
+   bar.style.background=i?"#b0442e":"#c99b47";
+   fight.appendChild(row);return bar;
+  });
+  w.appendChild(fight);
+  const ares=document.createElement("div");ares.className="gres";
+  ares.textContent=CARD.a[0]+" the "+CARD.a[1]+" against "+CARD.b[0]+" the "+CARD.b[1]+".";
+  w.appendChild(ares);
+  [0,1].forEach(side=>{
+   const g=side?CARD.b:CARD.a;
+   const row=document.createElement("div");row.className="mrow";
+   const lab=document.createElement("span");lab.className="mn";
+   lab.innerHTML='<span>'+g[0]+'</span><b>'+g[1]+' — pays '+(side?CARD.ob:CARD.oa)+'×</b>';
+   row.appendChild(lab);
+   const b=document.createElement("button");b.className="wide";b.textContent="bet";
+   b.onclick=()=>{
+    if(gameBusy||!afford())return;
+    const st=stake(),r=betArena(side,st);
+    if(!r)return;
+    gameBusy=true;buzz(5);
+    let i=0;
+    ares.className="gres";ares.textContent="They are on the sand.";
+    const id=setInterval(()=>{
+     const bl=r.blows[i];
+     bars[0].style.width=bl[0]+"%";bars[1].style.width=bl[1]+"%";
+     tone(90+Math.random()*120,.06,"square",.05);
+     if(++i>=r.blows.length){
+      clearInterval(id);
+      const winner=r.aWins?CARD.a:CARD.b;
+      if(r.hit){sfx("coin");ares.className="gres good";
+       ares.textContent=winner[0]+" stands over him. Missio refused — +"+money(r.w);
+       feed(winner[0]+" wins · +"+money(r.w),"gd");
+      }else{sfx("bad");ares.className="gres warn";
+       ares.textContent=winner[0]+" stands over him. Your "+money(st)+" is gone.";
+       feed(winner[0]+" wins · −"+money(st),"bad")}
+      drawFeed();CARD=makeCard();gameBusy=false;UPD.forEach(f=>f());
+     }
+    },90);
+   };
+   row.appendChild(b);w.appendChild(row);
+  });
+ }
+ UPD.push(()=>{
+  const sz=stakeSizes();
+  sub.textContent=money(sz[stakeIx][1]);
+  btns.forEach((b,i)=>b.classList.toggle("off",i!==stakeIx));
+  tali.querySelector("b").textContent=(S.b.loaded?"Your own tali, and nobody has asked to inspect them · ":"")+money(sz[stakeIx][1])+" a throw";
+  tali.style.opacity=afford()?1:.45;
+ });
+ return w;
+}
+
+let stakeIx=0;
+/* ============================ the lane: gifts and grudges ============================ */
+const NEIGH=["Old Fabia","Rufus the potter","Vibius from the mill lane","Salvia","Numerius the goatherd",
+ "Titus the wheelwright","Marcia next door","Big Gnaeus","Quintus with the bad leg","Pollia the weaver"];
+function giftScale(){return 1+S.rank*4+(S.b.farmhand||0)*.6}
+function gwCap(){return Math.max(12,100-18*(S.shun||0))}
+function addGoodwill(v){S.goodwill=clamp(S.goodwill+v,0,gwCap())}
+function freeNeighbours(){return NEIGH.filter(n=>(S.shunned||[]).indexOf(n)<0)}
+function giftTick(dt){
+ if(S.rank>3)return;
+ S.giftT-=dt;
+ if(S.giftT>0||$("#modal").classList.contains("on"))return;
+ const shunPenalty=1+(S.shun||0)*.55;
+ S.giftT=rnd(20,34)*(1.7-S.goodwill/100)*(1+S.rank*.45)*shunPenalty;
+ if(!freeNeighbours().length)return;
+ if(S.goodwill<28&&Math.random()<.4)return grudge();
+ if(Math.random()<.26)return favour();
+ gift();
+}
+function gift(){
+ const who=pick(freeNeighbours());
+ const warmth=.5+S.goodwill/60;           /* a good name is worth real goods */
+ const sc=giftScale()*warmth;
+ const fine=S.goodwill>=75&&Math.random()<.3;
+ const kinds=[
+  ["grain",Math.round(rnd(10,26)*sc),who+" leaves a sack of barley by your door."],
+  ["timber",Math.round(rnd(8,20)*sc),who+" drops off an armful of split wood."],
+  ["bread",Math.round(rnd(3,7)*sc),who+" sends over bread, still warm."],
+  ["olives",Math.round(rnd(6,14)*sc),who+" shares what fell from his trees."],
+  ["denarii",Math.round(rnd(15,55)*sc),who+" repays an old kindness in coin."]
+ ];
+ const g=pick(kinds.filter(k=>k[0]!=="olives"||S.seen.olives));
+ const mult=fine?rnd(2.2,3.4):1;
+ gain(g[0],Math.round(g[1]*mult));
+ sfx("gift");buzz(8);
+ log((fine?who+" has had a good year and does not forget who helped: ":g[2]+" ")+"+"+amount(g[0],Math.round(g[1]*mult)),"gd");
+}
+function grudge(){
+ const who=pick(freeNeighbours().concat(["Somebody"])),sc=giftScale();
+ const opts=[
+  ()=>{const q=Math.min(S.r.grain,Math.round(rnd(10,25)*sc));S.r.grain-=q;
+   log(who+" let his goats into your wheat and did not hurry to get them out. −"+fmt(q)+" grain","bad")},
+  ()=>{const q=Math.min(S.r.timber,Math.round(rnd(8,18)*sc));S.r.timber-=q;
+   log("Somebody helped themselves to your woodpile in the night. −"+fmt(q)+" timber","bad")},
+  ()=>{addGoodwill(-4);log("The lane is talking about you again, and not kindly.","bad")}
+ ];
+ pick(opts)();sfx("bad");
+}
+function favour(){
+ if(!freeNeighbours().length)return;
+ const who=pick(freeNeighbours()),sc=Math.max(.55,giftScale()*.5);
+ const asks=[
+  {k:"timber",q:Math.max(3,Math.round(rnd(4,9)*sc)),t:who+"'s roof has let the rain in and he is short of timber."},
+  {k:"grain",q:Math.max(5,Math.round(rnd(8,16)*sc)),t:who+" has run short of grain a month before harvest."},
+  {k:"bread",q:Math.max(2,Math.round(rnd(2,4)*sc)),t:who+" has a houseful of relations and nothing to feed them."},
+  {k:"denarii",q:Math.max(10,Math.round(rnd(12,30)*sc)),t:who+" owes rent and the landlord is not a patient man."}
+ ];
+ const a=pick(asks);
+ const have=a.k==="denarii"?S.r.denarii:S.r[a.k];
+ const canFull=have>=a.q;
+ const part=Math.floor(Math.min(have,a.q));
+ const ch=[];
+ if(canFull){
+  ch.push({n:"Give it — "+amount(a.k,a.q),e:"The lane remembers",f:()=>{
+   if(a.k==="denarii")S.r.denarii-=a.q;else S.r[a.k]-=a.q;
+   addGoodwill(13);S.giftT=Math.min(S.giftT,12);
+   sfx("good");log("You gave it without being asked twice. That gets around.","gd")}});
+ }else if(part>0){
+  ch.push({n:"Give what you can — "+amount(a.k,part),e:"Something is not nothing",f:()=>{
+   if(a.k==="denarii")S.r.denarii-=part;else S.r[a.k]-=part;
+   const frac=part/a.q;
+   addGoodwill(6+Math.round(7*frac));S.giftT=Math.min(S.giftT,16);
+   sfx("good");log("It was not all he asked for, but he saw you go and get it.","gd")}});
+ }else{
+  ch.push({n:"Show him your empty store",e:"You have nothing at all",f:()=>{
+   if(Math.random()<.85){addGoodwill(1);log(who+" looked in your store, said nothing, and left you alone.")}
+   else{addGoodwill(-4);log(who+" thinks you are hiding it somewhere.","bad")}}});
+ }
+ ch.push({n:"Tell him you cannot spare it",e:"He will ask again another year",
+  f:()=>{addGoodwill(-6);log(who+" nods and does not argue. He will remember all the same.","bad")}});
+ ch.push({n:"Tell him to get lost",e:"You keep everything, for good — and so does the lane",
+  f:()=>{
+   S.shunned=(S.shunned||[]).concat([who]);S.shun=(S.shun||0)+1;
+   addGoodwill(-25);S.goodwill=Math.min(S.goodwill,gwCap());
+   recompute();sfx("bad");buzz([20,60,20]);
+   log(who+" will never knock on your door again. Neither will the lane, much. Everything you make, you keep — and you work like a man with something to prove.","bad")}});
+ modal({h:"A favour asked",p:a.t+"\n\nHe is asking for "+amount(a.k,a.q)+
+  (canFull?"":" and you have "+amount(a.k,Math.floor(have))+".")+"\n\nNobody on this lane forgets any of the answers.",ch:ch});
+}
+
+/* ============================ rivals below you ============================ */
+const RIVALS=["Publius Clodius Pulcher","Titus Annius Milo","Lucius Sergius Catilina","Gaius Scribonius Curio",
+ "Marcus Caelius Rufus","Quintus Servilius Caepio","Lucius Domitius Ahenobarbus","Sextus Pompeius",
+ "Marcus Aemilius Lepidus","Gaius Asinius Pollio","Publius Ventidius Bassus","Lucius Munatius Plancus"];
+const DICTATORS=["Lucius Cornelius Sulla","Gnaeus Pompeius Magnus","Gaius Julius Caesar","Marcus Antonius","Tiberius Claudius Nero"];
+function spawnRival(){
+ const used=S.rival?[S.rival.name]:[];
+ S.rival={name:pick(RIVALS.filter(n=>used.indexOf(n)<0)),power:12,rank:Math.max(0,S.rank-1)};
+ log(S.rival.name+" is climbing the same ladder, one rung below you.","hi");
+}
+function rivalTick(dt){
+ if(S.rank<3)return;
+ if(!S.rival){S.rivalT-=dt;if(S.rivalT<=0){S.rivalT=rnd(200,340);spawnRival()}return}
+ const r=S.rival;
+ r.power=clamp(r.power+dt*(.05+S.rank*.012),0,100);
+ if(r.power>45)S.plebs=clamp(S.plebs-dt*.02,0,100);
+ if(r.power>70)S.senate=clamp(S.senate-dt*.02,0,100);
+ if(r.power>=100){
+  r.power=55;
+  const ps=provList();
+  if(S.rank>=9){usurpation(r.name)}
+  else if(ps.length&&Math.random()<.5){const id=pick(ps);delete S.prov[id];log(r.name+" has been given "+PID[id].n+" by the Senate. It is no longer yours.","bad")}
+  else{S.dig=Math.max(0,S.dig*.8);S.plebs=clamp(S.plebs-10,0,100);
+   log(r.name+" outbid you for the games. Rome is chanting his name this week.","bad")}
+ }
+}
+function rivalActions(){
+ const w=document.createElement("div");
+ if(!S.rival)return w;
+ const r=S.rival;
+ const acts=[
+  {n:"Discredit him in the courts",c:()=>Math.round(20000*Math.pow(3,S.rank-3)),d:"Advocates, witnesses, and a great deal of paperwork.",
+   f:()=>{r.power=clamp(r.power-35,0,100);log(r.name+" spends the season defending himself.","gd")}},
+  {n:"Buy his silence",c:()=>Math.round(60000*Math.pow(3,S.rank-3)),d:"He takes a province command far away and stops talking.",
+   f:()=>{S.rival=null;S.rivalT=rnd(240,400);S.dig=Math.max(0,S.dig-150);log(r.name+" has accepted a posting in Cilicia.","gd")}},
+  {n:"Have him killed",c:()=>0,d:"Clodius died on the Appian Way. These things happen.",
+   f:()=>{
+    if(Math.random()<.6){S.rival=null;S.rivalT=rnd(260,420);S.senate=clamp(S.senate-8,0,100);S.consp=clamp(S.consp+8,0,100);
+     log(r.name+" was found on the Appian Way. Nobody saw anything.","bad")}
+    else{S.dig=Math.max(0,S.dig-400);S.plebs=clamp(S.plebs-12,0,100);S.senate=clamp(S.senate-14,0,100);
+     log("The attempt on "+r.name+" failed and everyone knows who paid for it.","bad")}}}
+ ];
+ acts.forEach(a=>{
+  const b=document.createElement("button");b.className="card";
+  b.innerHTML='<div class="crow"><span class="cn"></span><span class="cc"></span></div><div class="cd"></div><div class="cp"></div>';
+  b.querySelector(".cn").textContent=a.n;b.querySelector(".cd").textContent=a.d;
+  const cp=b.querySelector(".cp");
+  b.onclick=()=>{const c=a.c();if(c&&S.r.denarii<c)return;if(c)S.r.denarii-=c;sfx("buy");buzz(9);a.f();render()};
+  UPD.push(()=>{const c=a.c();cp.textContent=c?money(c):"costs nothing but your soul";
+   const ok=!c||S.r.denarii>=c;b.classList.toggle("can",ok);b.classList.toggle("no",!ok)});
+  w.appendChild(b);
+ });
+ return w;
+}
+
+/* ============================ the roads to the purple ============================ */
+function pathReq(pth){
+ const out=[];
+ if(pth.req.leg)out.push({t:"Legions",h:S.legions,n:pth.req.leg});
+ if(pth.req.prov)out.push({t:"Provinces",h:provList().length,n:pth.req.prov});
+ if(pth.req.dig)out.push({t:"Dignitas",h:S.dig,n:pth.req.dig});
+ if(pth.req.den)out.push({t:"Ready money",h:S.r.denarii,n:pth.req.den});
+ if(pth.req.doles)out.push({t:"Grain doles given",h:S.doles,n:pth.req.doles});
+ if(pth.req.games)out.push({t:"Games sponsored",h:S.games,n:pth.req.games});
+ if(pth.req.m)for(const k in pth.req.m)out.push({t:k==="plebs"?"Popular favour":k==="senate"?"Senate favour":"Army loyalty",h:S[k],n:pth.req.m[k]});
+ if(pth.req.b)for(const k in pth.req.b)out.push({t:BID[k].n,h:S.b[k]||0,n:pth.req.b[k]});
+ if(pth.req.steps)out.push({t:"Preparations",h:(S.pstep[pth.id]||0),n:pth.req.steps});
+ if(pth.req.legMax)out.push({t:"Legions (at most "+pth.req.legMax+")",h:S.legions<=pth.req.legMax?1:0,n:1});
+ return out;
+}
+const pathReady=pth=>pathReq(pth).every(x=>x.h>=x.n);
+function attemptPath(pth){
+ if(S.rank>=9||!pathReady(pth))return;
+ if(S.rival&&S.rival.power>=70){
+  modal({h:"Not while he lives",p:S.rival.name+" has the Senate's ear and half the street. Nothing you attempt now will stand while he is this strong.",
+   ch:[{n:"Deal with him first",e:"",f:()=>{S.tab="rome"}}]});
+  return;
+ }
+ const o=pth.odds();
+ modal({h:pth.n,p:pth.warn+"\n\nYour people put your chances at "+Math.round(o*100)+"%.",
+  ch:[{n:"Do it",e:"Win: the purple. Lose: everything.",f:()=>{
+    if(Math.random()<o)takePurple(pth);
+    else{S.ending=pth.lose;die("path")}
+   }},
+   {n:"Wait a little longer",e:"",f:()=>{}}]});
+}
+function takePurple(pth){
+ S.path=pth.id;S.rank=9;S.consp=Math.max(0,S.consp-10);
+ if(pth.cost)pay(pth.cost);
+ S.found=foundation();
+ S.hold=clamp((pth.hold||1)*(1-S.found*.45),.45,2.2);
+ if(pth.id==="foreign"){S.senate=clamp(S.senate-40,0,100);S.plebs=clamp(S.plebs-25,0,100)}
+ if(pth.id==="republic"){S.senate=clamp(S.senate+10,0,100)}
+ if(pth.id==="tribune"){S.plebs=clamp(S.plebs+5,0,100);S.senate=clamp(S.senate-20,0,100)}
+ recompute();sfx("rank");buzz([14,50,14]);
+ banner("Rank IX · "+pth.tag,"Imperator",pth.win,{label:"Continue",f:()=>{
+  $("#banner").classList.remove("on");S.tab="palace";render();save();}},false,FACTS[9]);
+ log("You are Emperor of Rome.","hi");
+}
+
+/* ============================ the long decline ============================ */
+const HORDES=[["The Marcomanni","Ballomar"],["The Quadi","Ariogaesus"],["The Alamanni","Chnodomar"],
+ ["The Goths","Cniva"],["The Goths","Fritigern"],["The Visigoths","Alaric"],["The Vandals","Geiseric"],
+ ["The Sassanids","Shapur"],["The Iazyges","Zanticus"],["The Franks","Chlodio"],["The Cherusci","Arminius"],
+ ["The Dacians","Decebalus"],["The Batavians","Julius Civilis"],["The Iceni","Boudica"],["The Huns","Attila"]];
+function foundation(){
+ let f=0;
+ f+=Math.min(1,provList().length/6)*.30;
+ f+=Math.min(1,S.legions/8)*.18;
+ f+=Math.min(1,S.senate/85)*.15;
+ f+=Math.min(1,S.plebs/85)*.15;
+ f+=Math.min(1,S.loyalty/85)*.10;
+ f+=Math.min(1,S.dig/12000)*.12;
+ return clamp(f,0,1);
+}
+function holdWord(){
+ const h=S.hold||1;
+ return h<.72?"unshakeable":h<.95?"solid":h<1.2?"workable":h<1.5?"precarious":"by your fingertips";
+}
+function waveStrength(){return Math.round(900*(1+S.pressure/6)*(1+S.waves*.45)*(1+(S.tribute||0)*.18)*(S.hold||1))}
+function declineTick(dt){
+ if(!S.decline)return;
+ S.pressure+=dt*(.10+S.waves*.012);
+ S.waveT-=dt;
+ if(S.waveT<=0&&!$("#modal").classList.contains("on")){S.waveT=rnd(90,150)*Math.max(.55,1-S.waves*.02)/Math.max(.6,S.hold||1);doWave()}
+}
+function survived(txt){
+ S.waves++;S.pressure=Math.max(0,S.pressure-5);S.loyalty=clamp(S.loyalty+4,0,100);
+ S.dig+=300;log(txt,"gd");sfx("good");
+ /* victory is never free: veterans die and are not easily replaced */
+ if(S.legions>0&&Math.random()<.45){S.b.legion=Math.max(0,(S.b.legion||0)-1);recompute();
+  log("A legion is gone. There are fewer men to replace them every year.","bad")}
+}
+function loseProvince(why){
+ const ps=provList();
+ if(!ps.length){deposed();return}
+ const id=pick(ps);delete S.prov[id];
+ log(PID[id].n+" is lost. "+why,"bad");
+ if(!provList().length&&S.rank>=9)deposed();
+}
+function usurpation(name){
+ const str=waveStrength();
+ modal({h:"A rival emperor",p:name+" has been proclaimed emperor by his legions in the provinces and is marching on Italy.\n\nHis strength: "+fmt(str)+". Yours: "+fmt(armyStrength(S.legions))+".",
+  ch:[
+   {n:"Meet him in the field",e:"Your legions against his",f:()=>{
+     const o=clamp(armyStrength(S.legions)/(armyStrength(S.legions)+str),.05,.95);
+     if(Math.random()<o)survived("You beat "+name+" at the river crossing. His head is on the Rostra.");
+     else{S.b.legion=Math.max(0,(S.b.legion||0)-2);recompute();loseProvince("His men hold it now.");
+      S.consp=clamp(S.consp+20,0,100);log("Defeated by "+name+".","bad")}}},
+   {n:"Buy his army",e:"−"+money(str*9000),f:()=>{
+     if(S.r.denarii>=str*9000){S.r.denarii-=str*9000;S.tribute++;survived("His legions took your silver and sent you his head in a jar. Other legates are watching the price.")}
+     else{S.consp=clamp(S.consp+25,0,100);loseProvince("You could not pay, and they chose him.")}}},
+   {n:"Offer to share the empire",e:"−half a province's income, +peace",f:()=>{
+     loseProvince("It is his half of the empire now.");S.consp=clamp(S.consp-10,0,100);
+     S.senate=clamp(S.senate-10,0,100);log("Two emperors. It has never once worked.","bad")}}
+  ]});
+}
+function auctionTick(dt){
+ if(S.rank<3||S.rank>=9)return;
+ S.aucT-=dt;
+ if(S.aucT>0||$("#modal").classList.contains("on"))return;
+ S.aucT=rnd(200,260); /* roughly once a decade */
+ if(Math.random()>.5)return;
+ const price=Math.round(45000000*(1+S.rank*.22));
+ const pth=PATHS.find(x=>x.id==="auction");
+ sfx("bad");
+ log("The Praetorians have killed the emperor and are auctioning the empire from the camp wall.","hi");
+ modal({h:"The empire is for sale",
+  p:"The guard has murdered the emperor. From the rampart of their camp they are taking bids for the Roman world, and a fat senator is already shouting numbers.\n\nThe price stands at "+money(price)+".",
+  ch:[
+   {n:S.r.denarii>=price?("Outbid him — "+money(price)):("You are short "+money(price-S.r.denarii)),e:S.r.denarii>=price?"The world, bought outright":"Not this decade",
+    f:()=>{if(S.r.denarii>=price){S.r.denarii-=price;takePurple(pth)}
+     else log("The bidding went past you in a minute and a half.","bad")}},
+   {n:"Let it go to the senator",e:"He will not last the year",f:()=>{log("Rome has a new emperor. Nobody expects him to see out the spring.")}}
+  ]});
+}
+function doWave(){
+ const roll=Math.random();
+ const str=waveStrength();
+ if(roll<.45){
+  const hd=pick(HORDES),horde=hd[0]+" under "+hd[1];
+  modal({h:"The frontier breaks",p:horde+" have crossed the limes in force. Villages are burning three days' ride from a legionary fortress.\n\nTheir strength: "+fmt(str)+". Yours: "+fmt(armyStrength(S.legions))+".",
+   ch:[
+    {n:"Send the legions",e:"Fight it out",f:()=>{
+      const o=clamp(armyStrength(S.legions)/(armyStrength(S.legions)+str),.05,.95);
+      if(Math.random()<o)survived(hd[1]+" is dead and "+hd[0].toLowerCase()+" are broken against the frontier.");
+      else{S.b.legion=Math.max(0,(S.b.legion||0)-1);recompute();loseProvince("The frontier gave way.");
+       S.plebs=clamp(S.plebs-8,0,100)}}},
+    {n:"Pay them tribute",e:"−"+money(str*6000),f:()=>{
+      if(S.r.denarii>=str*6000){S.r.denarii-=str*6000;S.senate=clamp(S.senate-6,0,100);
+       S.pressure+=6;S.tribute++;log("They take the gold and promise to come back next year, politely. Word travels.","bad")}
+      else loseProvince("There was nothing left in the treasury to give them.")}},
+    {n:"Settle them inside the border",e:"Foederati: cheap now, dangerous later",f:()=>{
+      S.pressure+=6;S.tribute++;S.loyalty=clamp(S.loyalty-5,0,100);S.plebs=clamp(S.plebs-4,0,100);
+      gain("denarii",str*2000);log("They farm the frontier now, and they are armed, and they are not Roman.","bad")}}
+   ]});
+ }else if(roll<.68){
+  usurpation(pick(RIVALS));
+ }else if(roll<.82){
+  modal({h:"Plague",p:"Soldiers coming back from the east brought something with them. The cities are emptying.",
+   ch:[{n:"Empty the treasury on the sick",e:"−30% denarii",f:()=>{S.r.denarii*=.7;S.plebs=clamp(S.plebs+8,0,100);survived("The worst passed. They remember who paid for the doctors.")}},
+       {n:"Leave the cities to it",e:"−plebs, −production",f:()=>{S.plebs=clamp(S.plebs-16,0,100);S.pressure+=4;
+        for(const d of B){if(d.prod&&S.b[d.id])S.b[d.id]=Math.max(0,Math.floor(S.b[d.id]*.85))}recompute();
+        log("A third of your workers are dead.","bad")}}]});
+ }else{
+  modal({h:"The Praetorians",p:"The guard has surrounded the palace. The prefect explains, courteously, that the throne is being offered for sale and that you are welcome to bid.",
+   ch:[{n:"Pay what they ask",e:"−"+money(str*14000),f:()=>{
+      if(S.r.denarii>=str*14000){S.r.denarii-=str*14000;S.loyalty=clamp(S.loyalty+10,0,100);survived("You bought your own throne back. It is not the first time it has been sold.")}
+      else{S.consp=100;log("You could not meet the price.","bad")}}},
+    {n:"Refuse them",e:"Very dangerous",f:()=>{
+      if(Math.random()<clamp(S.loyalty/140,.1,.7))survived("The legions outside Rome sent word that they stood with you. The prefect apologised.");
+      else{S.consp=100;log("The prefect nods, and the door opens behind you.","bad")}}}]});
+ }
+}
+function deposed(){
+ S.dead=true;S.ending=S.ending||"The last province declared for somebody else. You were led out of the palace by men who had guarded it for you that morning, and Rome went on without you.";
+ endBanner("Deposed");
+}
+
+/* ============================ fama: the score ============================ */
+let BEST=0;
+function famaRows(){
+ const wn=Object.keys(S.won).length;
+ const rows=[
+  ["Highest station reached",S.peak*400],
+  ["Provinces held",provList().length*200],
+  ["Monuments standing",wn*700],
+  ["Dignitas",Math.floor(Math.log10(Math.max(10,S.dig))*420)],
+  ["Years as emperor",Math.floor(S.reign/22)*60],
+  ["Invasions and usurpers survived",S.waves*500],
+  ["Fortune",Math.floor(Math.log10(Math.max(10,S.r.denarii))*220)],
+  ["Games given to the people",Math.min(S.games,80)*15]
+ ];
+ if(S.gambled>0)rows.push(["Won at the tables",Math.floor(Math.sqrt(S.gambled)/8)]);
+ return rows;
+}
+function fama(){
+ let base=0;famaRows().forEach(r=>base+=r[1]);
+ const p=S.path?PATHS.find(x=>x.id===S.path):null;
+ return Math.max(0,Math.floor(base*(p?p.mult:1)));
+}
+function endBanner(title){
+ const f=fama();
+ const best=Math.max(BEST,f);BEST=best;
+ try{if(window.storage)window.storage.set("roma:best",String(best))}catch(e){}
+ const p=S.path?PATHS.find(x=>x.id===S.path):null;
+ sfx("bad");
+ banner("Anno "+year(),title,(S.ending||"")+"\n\nFama "+fmt(f)+(p?"  ("+p.tag+" ×"+p.mult+")":"")+"\nBest "+fmt(best),
+  {label:"Begin again as nobody",f:()=>{S=fresh();recompute();chipSig="";meterSig="";
+   $("#banner").classList.remove("on","dead");log("A field. An oven. Nothing else.");render();save()}},true);
+}
+
+/* ============================ war ============================ */
+function armyStrength(n){return n*70*M.army*(.65+S.loyalty/145)}
+function odds(n,p){const s=armyStrength(n);return clamp(s/(s+p.df),.05,.96)}
+function startCamp(p,n){
+ S.camp={p:p.id,n:n,t:22+p.df/45*M.fast,tot:22+p.df/45*M.fast,o:odds(n,p)};
+ log(fmt(n)+" legions march for "+p.n+".","hi");
+ closeModal();render();
+}
+function resolveCamp(){
+ const c=S.camp,p=PID[c.p];S.camp=null;
+ if(Math.random()<c.o){
+  S.prov[p.id]=1;
+  const lost=Math.random()<.35?1:0;
+  if(lost){S.b.legion=Math.max(0,(S.b.legion||0)-1);recompute()}
+  S.dig+=250;S.plebs=clamp(S.plebs+7,0,100);S.senate=clamp(S.senate+3,0,100);S.loyalty=clamp(S.loyalty+6,0,100);
+  log(p.n+" is yours."+(lost?" One legion was destroyed taking it.":""),"gd");
+ }else{
+  const lost=Math.max(1,Math.round(c.n*rnd(.3,.6)*M.save));
+  S.b.legion=Math.max(0,(S.b.legion||0)-lost);recompute();
+  S.plebs=clamp(S.plebs-8,0,100);S.senate=clamp(S.senate-7,0,100);S.loyalty=clamp(S.loyalty-12,0,100);
+  S.dig=Math.max(0,S.dig-300);
+  log("Defeat in "+p.n+". "+lost+" legion"+(lost>1?"s":"")+" lost.","bad");
+ }
+ render();
+}
+function maybeRevolt(){
+ const ps=provList();if(!ps.length)return;
+ const risk=.20+(60-S.loyalty)*.004+(S.rank>=9?(50-S.plebs)*.003:0);
+ if(Math.random()>clamp(risk,.05,.7))return;
+ const id=pick(ps),p=PID[id];
+ modal({
+  h:"Revolt",
+  p:p.n+" has risen. Tax collectors are dead in the streets and the garrison has withdrawn to the coast.",
+  ch:[
+   {n:"Send the legions",e:"Risk "+Math.round((1-odds(Math.max(1,S.legions),{df:p.df*.6}))*100)+"% · loses men",f:()=>{
+     if(odds(Math.max(1,S.legions),{df:p.df*.6})>Math.random()){
+      log(p.n+" is pacified.","gd");S.dig+=80;S.plebs=clamp(S.plebs+3,0,100);
+     }else{
+      S.b.legion=Math.max(0,(S.b.legion||0)-1);delete S.prov[id];recompute();
+      log("The relief force was destroyed. "+p.n+" is lost.","bad");S.senate=clamp(S.senate-8,0,100);
+     }}},
+   {n:"Buy them off",e:"−"+money(p.den*400),f:()=>{
+     if(S.r.denarii>=p.den*400){S.r.denarii-=p.den*400;log(p.n+" is quiet again. Expensively.");S.senate=clamp(S.senate-3,0,100)}
+     else{delete S.prov[id];log("You had nothing to give. "+p.n+" is lost.","bad")}}},
+   {n:"Let it go",e:"Lose the province",f:()=>{delete S.prov[id];S.dig=Math.max(0,S.dig-200);S.senate=clamp(S.senate-6,0,100);log(p.n+" is no longer yours.","bad")}}
+  ]
+ });
+}
+
+/* ============================ emperor ============================ */
+function plot(){
+ const survive=clamp(.25+S.loyalty/220+(S.heir?.1:0),0,.9);
+ if(Math.random()<survive){
+  S.consp=clamp(S.consp-45,0,100);S.senate=clamp(S.senate-8,0,100);
+  modal({h:"A plot uncovered",p:"A freedman brings you names before the knives do. The trials last a week. The Senate watches you very carefully now.",
+   ch:[{n:"Continue",e:"",f:()=>{}}]});
+  log("A conspiracy was uncovered in time.","hi");
+ }else die("assassinated");
+}
+function die(how){
+ S.dead=true;
+ if(how==="assassinated")S.ending="Twenty-three wounds on the Senate floor. The men who did it were men you had pardoned, promoted, and dined with.";
+ else if(how==="defeated")S.ending="Your army broke before the walls of Rome. The Senate had you killed on the road south, and voted your memory condemned.";
+ S.ending=(S.ending||"")+"\n\nYou began with one field and a clay oven. You ended holding "+provList().length+" provinces.";
+ endBanner(how==="assassinated"?"Sic Semper Tyrannis":"The end of it");
+}
+function startDecline(){
+ if(S.decline)return;
+ S.decline=true;S.waveT=60;
+ banner("Anno "+year(),"Roma Aeterna","The last scaffolding comes down off the palace. From the top step you can see the aqueduct, the forum, the arena — and, if you know where to look, a small field beyond the ninth milestone where a boy once cut wheat by hand.\n\nYou have built everything a Roman can build. Now the only question left is how long you can hold it. The frontier is already moving.",
+  {label:"Hold it",f:()=>{$("#banner").classList.remove("on");render()}});
+ log("The frontier is stirring. They can smell how rich you are.","bad");
+}
+function checkVictory(){
+ if(S.victory)return;
+ if(WON.every(w=>S.won[w.id])){
+  S.victory=true;S.dig+=4000;
+  banner("Roma Aeterna","Consummatum","The last scaffolding comes down off the palace. From the top step you can see the aqueduct, the forum, the arena — and, if you know where to look, a small field beyond the ninth milestone where a boy once cut wheat by hand.\n\nRome answers to you. Keep it if you can.",
+   {label:"Reign on",f:()=>{$("#banner").classList.remove("on");render()}});
+ }
+}
+
+/* ============================ events ============================ */
+const EVENTS=[
+ {r:[1,3],w:3,h:"Drought",p:"Three months without rain. The wheat is light in the ear.",
+  ch:[{n:"Endure it",e:"Lose a third of your grain",f:()=>{S.r.grain*=.66;log("The stores are thin.","bad")}},
+      {n:"Buy grain in the market",e:"−1,200 denarii",f:()=>{if(S.r.denarii>=1200){S.r.denarii-=1200;log("You bought your way through the dry year.")}else{S.r.grain*=.66;log("You could not afford it.","bad")}}}]},
+ {r:[1,4],w:3,h:"A neighbour's plot",p:"The widow next door is selling. The land is good and she is in a hurry.",
+  ch:[{n:"Buy it",e:"−2,000 denarii · +1 field, +1 grove",f:()=>{if(S.r.denarii>=2000){S.r.denarii-=2000;S.b.field=(S.b.field||0)+1;S.b.grove=(S.b.grove||0)+1;recompute();log("Two more plots under your name.","gd")}else log("You did not have the coin.","bad")}},
+      {n:"Let it pass",e:"",f:()=>{}}]},
+ {r:[1,5],w:2,h:"Fire in the workshop",p:"An oven cracked in the night and took the roof with it.",
+  ch:[{n:"Rebuild at once",e:"−15% of your denarii",f:()=>{S.r.denarii*=.85;log("Rebuilt within the week.")}},
+      {n:"Work around it",e:"Lose a bakery",f:()=>{S.b.bakery=Math.max(0,(S.b.bakery||0)-1);recompute();log("One bakery gone.","bad")}}]},
+ {r:[2,9],w:3,h:"A rival undercuts you",p:"A freedman with Egyptian backers is selling below your price in your own street.",
+  ch:[{n:"Undercut him back",e:"−20% denarii, he folds",f:()=>{S.r.denarii*=.8;S.dig+=60;log("He is out of the market by winter.","gd")}},
+      {n:"Buy his stock",e:"−8,000 denarii, +goods",f:()=>{if(S.r.denarii>=8000){S.r.denarii-=8000;gain("bread",400);gain("oil",300);log("His stock is now yours.","gd")}else log("You could not raise it.","bad")}},
+      {n:"Ignore him",e:"−dignitas",f:()=>{S.dig=Math.max(0,S.dig-40);log("People notice that you did nothing.")}}]},
+ {r:[3,9],w:3,h:"Slander in the forum",p:"A senator's client is telling everyone your grandfather was a slave.",
+  ch:[{n:"Sponsor games",e:"−30,000 denarii · +plebs",f:()=>{if(S.r.denarii>=30000){S.r.denarii-=30000;S.plebs=clamp(S.plebs+9,0,100);S.dig+=120;log("The crowd has already forgotten the story.","gd")}else{S.dig=Math.max(0,S.dig-100);log("You could not answer it.","bad")}}},
+      {n:"Sue him",e:"+senate, −plebs",f:()=>{S.senate=clamp(S.senate+5,0,100);S.plebs=clamp(S.plebs-4,0,100);log("The courts side with you. The street does not.")}},
+      {n:"Say nothing",e:"−dignitas",f:()=>{S.dig=Math.max(0,S.dig-180);log("The story spreads.","bad")}}]},
+ {r:[4,9],w:3,h:"The grain price rises",p:"Speculators are holding back the harvest. Bread has doubled in a month and the Subura is loud about it.",
+  ch:[{n:"Subsidise the dole",e:"−80,000 denarii · +plebs",f:()=>{if(S.r.denarii>=80000){S.r.denarii-=80000;S.plebs=clamp(S.plebs+12,0,100);log("Cheap bread, and your name on it.","gd")}else{S.plebs=clamp(S.plebs-8,0,100);log("You had nothing to give.","bad")}}},
+      {n:"Let the market decide",e:"+coin, −plebs",f:()=>{gain("denarii",60000);S.plebs=clamp(S.plebs-10,0,100);S.senate=clamp(S.senate+4,0,100);log("You profited. The city noticed.")}},
+      {n:"Seize the hoards",e:"+grain, −senate",f:()=>{gain("grain",8000);S.plebs=clamp(S.plebs+7,0,100);S.senate=clamp(S.senate-12,0,100);log("The equestrians will remember this.","bad")}}]},
+ {r:[4,9],w:2,h:"A prosecution",p:"An ambitious young man accuses you of extortion in your province. He has documents.",
+  ch:[{n:"Buy the jury",e:"−25% denarii",f:()=>{S.r.denarii*=.75;log("Acquitted, unanimously.")}},
+      {n:"Defend yourself",e:"Uncertain",f:()=>{if(Math.random()<clamp(.35+S.senate/180,0,.9)){S.dig+=300;S.senate=clamp(S.senate+6,0,100);log("You spoke for four hours and won.","gd")}else{S.dig=Math.max(0,S.dig-500);S.r.denarii*=.6;log("Convicted. A heavy fine.","bad")}}},
+      {n:"Have him silenced",e:"−senate, −conscience",f:()=>{S.senate=clamp(S.senate-10,0,100);S.consp=clamp(S.consp+6,0,100);log("He is found in the Tiber.","bad")}}]},
+ {r:[6,9],w:3,h:"Mutiny",p:"The Ninth refuses to march. They want their discharge bonus and they want it now.",
+  ch:[{n:"Pay the donative",e:"−200,000 denarii · +loyalty",f:()=>{if(S.r.denarii>=200000){S.r.denarii-=200000;S.loyalty=clamp(S.loyalty+18,0,100);log("They cheer your name again.","gd")}else{S.loyalty=clamp(S.loyalty-20,0,100);log("You had nothing to pay them with.","bad")}}},
+      {n:"Decimate them",e:"−loyalty now, discipline later",f:()=>{S.loyalty=clamp(S.loyalty-6,0,100);S.dig+=100;S.plebs=clamp(S.plebs-4,0,100);log("Every tenth man clubbed to death by his friends. No one refuses again.","bad")}},
+      {n:"Address them yourself",e:"Uncertain",f:()=>{if(Math.random()<clamp(.3+S.dig/6000,0,.85)){S.loyalty=clamp(S.loyalty+22,0,100);log("You called them citizens instead of soldiers. They begged to be taken back.","gd")}else{S.b.legion=Math.max(0,(S.b.legion||0)-1);recompute();log("A legion walks away from you.","bad")}}}]},
+ {r:[6,9],w:2,h:"Barbarian raid",p:"A war band has crossed the frontier and is burning farms in your richest province.",
+  ch:[{n:"Intercept them",e:"Risk one legion",f:()=>{if(Math.random()<clamp(.5+S.legions*.05,0,.92)){S.dig+=150;S.plebs=clamp(S.plebs+5,0,100);log("Caught them at the ford. None returned home.","gd")}else{S.b.legion=Math.max(0,(S.b.legion||0)-1);recompute();log("Ambushed in the woods. A legion is gone.","bad")}}},
+      {n:"Pay them to leave",e:"−300,000 denarii",f:()=>{if(S.r.denarii>=300000){S.r.denarii-=300000;S.senate=clamp(S.senate-6,0,100);log("Bought off. The Senate calls it cowardice.")}else{gain("grain",-2000);log("They took what they wanted.","bad")}}}]},
+ {r:[9,9],w:3,h:"The Senate objects",p:"A consul has read out a motion criticising your treatment of the courts. The chamber was silent, but nobody stopped him.",
+  ch:[{n:"Attend and answer",e:"+senate, −conspiracy",f:()=>{S.senate=clamp(S.senate+8,0,100);S.consp=clamp(S.consp-10,0,100);log("You sat among them as a citizen. It worked.","gd")}},
+      {n:"Purge the ringleaders",e:"−conspiracy now, worse later",f:()=>{S.consp=clamp(S.consp-25,0,100);S.senate=clamp(S.senate-18,0,100);S.purges++;log("Six houses emptied before dawn.","bad")}},
+      {n:"Ignore it",e:"+conspiracy",f:()=>{S.consp=clamp(S.consp+8,0,100);log("The motion passes into the record.")}}]},
+ {r:[9,9],w:2,h:"Fire in Rome",p:"Nine districts are burning. People are sleeping in the tombs along the Appian Way.",
+  ch:[{n:"Open the palace and rebuild",e:"−2,000,000 denarii · +plebs",f:()=>{if(S.r.denarii>=2e6){S.r.denarii-=2e6;S.plebs=clamp(S.plebs+16,0,100);S.dig+=400;log("They are calling you the father of the city.","gd")}else{S.plebs=clamp(S.plebs-14,0,100);log("Nothing came from the palace.","bad")}}},
+      {n:"Blame a sect",e:"−conspiracy, −plebs later",f:()=>{S.consp=clamp(S.consp-12,0,100);S.plebs=clamp(S.plebs-8,0,100);log("Someone must be responsible. Someone is chosen.","bad")}}]},
+ {r:[9,9],w:2,h:"The Praetorians ask",p:"The prefect mentions, pleasantly, that the guard has not received a donative this year.",
+  ch:[{n:"Pay generously",e:"−1,000,000 denarii · +loyalty",f:()=>{if(S.r.denarii>=1e6){S.r.denarii-=1e6;S.loyalty=clamp(S.loyalty+16,0,100);S.consp=clamp(S.consp-8,0,100);log("The guard is content.","gd")}else{S.loyalty=clamp(S.loyalty-15,0,100);S.consp=clamp(S.consp+10,0,100);log("The prefect bows and says nothing further.","bad")}}},
+      {n:"Refuse",e:"−loyalty, +conspiracy",f:()=>{S.loyalty=clamp(S.loyalty-18,0,100);S.consp=clamp(S.consp+14,0,100);log("You will not be extorted. They will not forget.","bad")}}]}
+];
+function doEvent(){
+ const pool=EVENTS.filter(e=>S.rank>=e.r[0]&&S.rank<=e.r[1]);
+ if(!pool.length)return;
+ let tot=0;pool.forEach(e=>tot+=e.w);let x=Math.random()*tot,ev=pool[0];
+ for(const e of pool){x-=e.w;if(x<=0){ev=e;break}}
+ modal({h:ev.h,p:ev.p,ch:ev.ch});buzz(14);
+}
+
+/* ============================ modal / banner ============================ */
+function modal(o){
+ const sh=$("#sheet");sh.innerHTML="";
+ const h=document.createElement("h3");h.textContent=o.h;sh.appendChild(h);
+ const p=document.createElement("p");p.textContent=o.p;sh.appendChild(p);
+ if(o.extra)sh.appendChild(o.extra);
+ o.ch.forEach(c=>{
+  const b=document.createElement("button");b.className="choice";
+  b.innerHTML='<div class="cn"></div>'+(c.e?'<div class="ce"></div>':"");
+  b.querySelector(".cn").textContent=c.n;
+  if(c.e)b.querySelector(".ce").textContent=c.e;
+  b.onclick=()=>{buzz(8);c.f();closeModal();recompute();render()};
+  sh.appendChild(b);
+ });
+ $("#modal").classList.add("on");
+}
+function closeModal(){$("#modal").classList.remove("on")}
+function banner(lat,ttl,bd,btn,dead,fact){
+ const b=$("#banner");b.className="on"+(dead?" dead":"");
+ b.innerHTML="";
+ const a=document.createElement("div");a.className="lat";a.textContent=lat;b.appendChild(a);
+ const t=document.createElement("div");t.className="ttl";t.textContent=ttl;b.appendChild(t);
+ const d=document.createElement("div");d.className="bd";d.textContent=bd;b.appendChild(d);
+ if(fact){const f=document.createElement("div");f.className="fact";
+  f.innerHTML='<b>Rome, in fact</b><span></span>';f.querySelector("span").textContent=fact;b.appendChild(f)}
+ try{const app=$("#app");app.classList.remove("shake");void app.offsetWidth;app.classList.add("shake")}catch(e){}
+ if(btn){const x=document.createElement("button");x.className="big"+(dead?" danger":"");x.textContent=btn.label;
+  x.onclick=()=>{buzz(10);btn.f()};b.appendChild(x)}
+}
+
+/* ============================ ascend ============================ */
+function reqList(){
+ const nx=RANKS[S.rank].next;if(!nx)return[];
+ const out=[];
+ if(nx.req.r)for(const k in nx.req.r)out.push({t:NAMES[k].charAt(0).toUpperCase()+NAMES[k].slice(1),h:S.r[k],n:nx.req.r[k]});
+ if(nx.req.b)for(const k in nx.req.b)out.push({t:BID[k].n,h:S.b[k]||0,n:nx.req.b[k]});
+ if(nx.req.dig)out.push({t:"Dignitas",h:S.dig,n:nx.req.dig});
+ if(nx.req.m)for(const k in nx.req.m)out.push({t:k==="plebs"?"Popular favour":k==="senate"?"Senate favour":"Army loyalty",h:S[k],n:nx.req.m[k]});
+ if(nx.req.leg)out.push({t:"Legions",h:S.legions,n:nx.req.leg});
+ if(nx.req.prov)out.push({t:"Provinces",h:provList().length,n:nx.req.prov});
+ return out;
+}
+const canAscend=()=>{const l=reqList();return l.length>0&&l.every(x=>x.h>=x.n)};
+function ascend(){
+ const nx=RANKS[S.rank].next;if(!nx||!canAscend())return;
+ if(nx.march){
+  const p=clamp(.30+(S.loyalty-70)*.012+S.legions*.028+(50-S.senate)*.003,.15,.9);
+  modal({h:"The Rubicon",p:"Cross the river with an army and there is no legal way back. If you lose, the Senate will not spare you.\n\nYour chance, as best your legates can judge it: "+Math.round(p*100)+"%.",
+   ch:[{n:"Cross",e:"Win: empire. Lose: death.",f:()=>{
+     if(Math.random()<p)promote();
+     else die("defeated");
+    }},{n:"Wait another season",e:"Build strength first",f:()=>{}}]});
+  return;
+ }
+ promote();
+}
+function promote(){
+ const nx=RANKS[S.rank].next;
+ if(!nx)return;
+ S.rank++;
+ if(nx.gift){
+  if(nx.gift.r)for(const k in nx.gift.r)gain(k,nx.gift.r[k]);
+  if(nx.gift.b)for(const k in nx.gift.b)S.b[k]=(S.b[k]||0)+nx.gift.b[k];
+  if(nx.gift.dig)S.dig+=nx.gift.dig;
+  if(nx.gift.m)for(const k in nx.gift.m)S[k]=clamp(S[k]+nx.gift.m[k],0,100);
+ }
+ recompute();buzz([12,40,12]);sfx("rank");
+ banner(nx.lat,nx.ttl,nx.bd,{label:"Continue",f:()=>{
+  $("#banner").classList.remove("on");
+  if(nx.tab)S.tab=nx.tab;
+  if(S.rank===3)log("You do not carry sacks any more.","hi");
+  render();save();
+ }},false,FACTS[S.rank]);
+ log("You are now "+RANKS[S.rank].n+".","hi");
+}
+
+/* ============================ the sidebar ============================ */
+let drawerSec=null;
+function drawerTabs(){
+ const t=[["chron","Chronicle"],["ledger","Ledger"]];
+ if(S.rank>=1)t.push(["tavern","Tavern"]);
+ if(S.rank>=3)t.push(["rivals","Rivals"]);
+ t.push(["legacy","Legacy"],["settings","Settings"]);
+ return t;
+}
+function openDrawer(sec){
+ const tabs=drawerTabs();
+ drawerSec=sec&&tabs.some(x=>x[0]===sec)?sec:tabs[0][0];
+ $("#drawer").classList.add("on");sfx("tap");render();
+}
+function closeDrawer(){drawerSec=null;$("#drawer").classList.remove("on")}
+function settingsEl(){
+ const w=document.createElement("div");
+ const row=(label,sub,get,set)=>{
+  const d=document.createElement("div");d.className="toggle";
+  d.innerHTML='<span></span>';
+  d.querySelector("span").innerHTML=label+'<b>'+sub+'</b>';
+  const b=document.createElement("button");
+  b.onclick=()=>{set(!get());sfx("tap");render()};
+  d.appendChild(b);
+  UPD.push(()=>{b.textContent=get()?"on":"off";b.classList.toggle("off",!get())});
+  w.appendChild(d);
+ };
+ row("Music","Drums, horns and a tibia, on a long loop",()=>MUSIC,v=>{MUSIC=v;if(v){audioInit();musicStart()}else musicStop()});
+ row("Sound","Clicks, coins and fanfares",()=>SOUND,v=>{SOUND=v;if(v){audioInit();sfx("coin")}});
+ row("Hiring warnings","Ask before hiring someone with nothing to do",()=>!S.warnOff,v=>{S.warnOff=!v});
+ const b=document.createElement("button");b.className="big danger";b.style.marginTop="14px";
+ b.textContent="Abandon this life";
+ b.onclick=()=>{closeDrawer();modal({h:"This life",p:"You are "+RANKS[S.rank].n.toLowerCase()+" in the year "+year()+". Everything you built goes with you.",
+  ch:[{n:"Keep going",e:"",f:()=>{}},
+      {n:"Start again as a peasant",e:"",f:()=>{S=fresh();recompute();chipSig="";meterSig="";log("A field. An oven. Nothing else.");save()}}]})};
+ w.appendChild(b);
+ return w;
+}
+function legacyEl(){
+ const w=document.createElement("div");
+ const box=document.createElement("div");w.appendChild(box);
+ UPD.push(()=>{
+  let h="";
+  famaRows().forEach(r=>{h+='<div class="led"><span>'+r[0]+'</span><i>'+fmt(r[1])+'</i></div>'});
+  const p=S.path?PATHS.find(x=>x.id===S.path):null;
+  if(p)h+='<div class="led"><span>Road taken — '+p.tag+'</span><i>×'+p.mult+'</i></div>';
+  h+='<div class="led tot"><span>Fama</span><i>'+fmt(fama())+'</i></div>';
+  if(BEST)h+='<div class="led"><span>Your best</span><i>'+fmt(BEST)+'</i></div>';
+  if(S.rank>=9){
+   h+='<div class="led tot"><span>Your hold on the empire</span><i>'+holdWord()+'</i></div>';
+   h+='<div class="led"><span>Foundations laid before the purple</span><i>'+Math.round((S.found||0)*100)+'%</i></div>';
+  }
+  box.innerHTML=h;
+ });
+ return w;
+}
+function drawerBody(){
+ const b=$("#dbody");b.innerHTML="";
+ const tabs=drawerTabs();
+ const dt=$("#dtabs");dt.innerHTML="";
+ tabs.forEach(([id,label])=>{
+  const x=document.createElement("button");x.textContent=label;
+  if(id===drawerSec)x.className="on";
+  x.onclick=()=>{drawerSec=id;sfx("tap");render()};
+  dt.appendChild(x);
+ });
+ if(drawerSec==="chron"){
+  b.appendChild(sec("Everything that has happened"));
+  const box=document.createElement("div");box.className="chron";
+  if(!HIST.length)box.innerHTML='<div>Nothing yet.</div>';
+  HIST.forEach(h=>{const d=document.createElement("div");if(h.c)d.className=h.c;d.textContent=h.t;box.appendChild(d)});
+  b.appendChild(box);
+ }
+ if(drawerSec==="ledger"){b.appendChild(sec("Where the money comes from"));b.appendChild(ledgerEl())}
+ if(drawerSec==="tavern"){b.appendChild(sec("The tavern on the Subura"));b.appendChild(tavernEl())}
+ if(drawerSec==="rivals"){
+  if(S.rival){
+   b.appendChild(sec(S.rival.name));
+   const n=document.createElement("div");n.className="note";b.appendChild(n);
+   UPD.push(()=>{n.textContent=S.rival?("He is "+(S.rival.power<30?"a nuisance":S.rival.power<60?"gathering a following":S.rival.power<85?"dangerous":"about to overtake you")+" — "+Math.round(S.rival.power)+"/100."):"He is gone, for now."});
+   b.appendChild(rivalActions());
+  }else{b.appendChild(sec("Rivals"));b.appendChild(note("Nobody is close enough to be a problem this month."))}
+ }
+ if(drawerSec==="legacy"){b.appendChild(sec("Fama"));b.appendChild(legacyEl())}
+ if(drawerSec==="settings"){b.appendChild(sec("Settings"));b.appendChild(settingsEl())}
+}
+
+/* ============================ rendering ============================ */
+function tabsFor(){
+ const t=[];
+ if(S.rank<3)t.push(["work","Work"]);
+ t.push(["build","Estate"]);
+ if(S.rank>=2)t.push(["trade","Trade"]);
+ if(S.rank>=3)t.push(["rome","Rome"]);
+ if(S.rank>=6)t.push(["war","War"]);
+ if(S.rank>=7&&S.rank<9)t.push(["paths","Roads"]);
+ if(S.rank>=9)t.push(["palace","Palace"]);
+ return t;
+}
+function buildTabs(){
+ const t=tabsFor(),key=t.map(x=>x[0]).join(",");
+ if(key===tabsBuilt)return;tabsBuilt=key;
+ const c=$("#tabs");c.innerHTML="";
+ t.forEach(([id,label])=>{
+  const b=document.createElement("button");b.textContent=label;b.dataset.tab=id;
+  b.onclick=()=>{S.tab=id;buzz(5);render()};
+  c.appendChild(b);
+ });
+ if(!t.some(x=>x[0]===S.tab))S.tab=t[0][0];
+}
+function year(){
+ const y=-82+Math.floor(S.t/22);
+ return y<0?Math.abs(y)+" BC":(y===0?"1 AD":y+" AD");
+}
+let meterEls=null,meterSig="";
+function head(){
+ $("#rank").innerHTML="<b>"+RANKS[S.rank].l+"</b>";
+ $("#year").textContent=year();
+ const show=["denarii"].concat(MATS).filter(k=>S.seen[k]||S.r[k]>0);
+ if(S.rank>=3)show.push("dig");
+ const sig=show.join(",");
+ if(sig!==chipSig){
+  chipSig=sig;chipEls={};
+  const c=$("#chips");c.innerHTML="";
+  show.forEach(k=>{
+   const sp=document.createElement("span");sp.className="chip";
+   sp.innerHTML='<em></em><i></i>';
+   sp.querySelector("em").textContent=k==="dig"?"dignitas":NAMES[k];
+   c.appendChild(sp);
+   chipEls[k]={box:sp,val:sp.querySelector("i"),name:sp.querySelector("em")};
+  });
+ }
+ show.forEach(k=>{
+  const e=chipEls[k];if(!e)return;
+  if(k==="dig"){e.val.textContent=fmt(S.dig);return}
+  const cap=CAP[k],v=S.r[k];
+  if(k==="denarii"){
+   const hs=v>=HS_AT;
+   e.name.textContent=hs?"sestertii":"denarii";
+   e.val.textContent=hs?fmt(v*4):fmt(v);
+   return;
+  }
+  e.val.textContent=fmt(v)+(cap===Infinity?"":"/"+fmt(cap));
+  e.box.classList.toggle("full",cap!==Infinity&&v>=cap*.995);
+ });
+ const ms=[];
+ if(S.rank>=3){
+  ms.push(["plebs","People","var(--minium)"],["senate","Senate","var(--blue)"]);
+  if(S.rank>=6)ms.push(["loyalty","Army","var(--verd)"]);
+  if(S.rank>=9)ms.push(["consp","Plots","var(--minium)"]);
+ }
+ const msig=ms.map(x=>x[0]).join(",");
+ if(msig!==meterSig){
+  meterSig=msig;meterEls={};
+  const m=$("#meters");m.innerHTML="";
+  ms.forEach(([k,l,col])=>{
+   const d=document.createElement("div");d.className="meter";
+   d.innerHTML='<div class="mlab"><span></span><span class="v"></span></div><div class="bar"><i style="background:'+col+'"></i></div>';
+   d.querySelector(".mlab span").textContent=l;
+   m.appendChild(d);
+   meterEls[k]={v:d.querySelector(".v"),bar:d.querySelector(".bar i")};
+  });
+ }
+ ms.forEach(([k])=>{const e=meterEls[k];if(!e)return;
+  e.v.textContent=Math.round(S[k]);e.bar.style.width=S[k]+"%"});
+}
+function sec(txt){const h=document.createElement("h2");h.className="sec";h.textContent=txt;return h}
+function note(txt){const p=document.createElement("div");p.className="note";p.textContent=txt;return p}
+
+function cardEl(d){
+ const b=document.createElement("button");b.className="card";
+ b.innerHTML='<div class="crow"><span class="cn"></span><span class="cc"></span></div><div class="cd"></div><div class="cp"></div>';
+ b.querySelector(".cn").textContent=d.n;
+ b.querySelector(".cd").textContent=d.d;
+ const cp=b.querySelector(".cp"),cc=b.querySelector(".cc");
+ const doBuy=()=>{
+  const c=cost(d);
+  if(!has(c))return;
+  pay(c);S.b[d.id]=(S.b[d.id]||0)+1;recompute();buzz([8,20,12]);sfx("buy");
+  b.classList.remove("hit");void b.offsetWidth;b.classList.add("hit");
+  floatUp(b,"+ "+d.n.toLowerCase());
+  if(d.id==="legion")log("A new legion is enrolled.","hi");
+  if(d.id==="palace"){}
+  render();
+ };
+ b.onclick=()=>{
+  const bl=blocked(d);if(bl)return;
+  if(!has(cost(d)))return;
+  const w=hireWarning(d);
+  if(w){
+   modal({h:"Are you sure?",
+    p:"Your "+d.n.toLowerCase()+"s would then want "+w.need+" "+NAMES[w.res]+" a second, and you only produce "+w.have+". This one will stand idle most of the day.",
+    ch:[{n:"Hire anyway",e:"",f:doBuy},
+        {n:"Build up the "+(w.src||"supply")+" first",e:"",f:()=>{}},
+        {n:"Hire, and stop asking me",e:"",f:()=>{S.warnOff=true;doBuy()}}]});
+   return;
+  }
+  doBuy();
+ };
+ UPD.push(()=>{
+  const n=S.b[d.id]||0,bl=blocked(d),c=cost(d),afford=has(c);
+  cc.textContent=d.max===1?(n?"held":"")+"":(n?"×"+n:"");
+  b.classList.toggle("can",!bl&&afford);
+  b.classList.toggle("no",!!bl||!afford);
+  b.classList.toggle("idle",n>0&&(RATE[d.id]!==undefined&&RATE[d.id]<=.05));
+  let s;
+  if(bl==="owned")s="Already yours.";
+  else if(bl)s=bl.charAt(0).toUpperCase()+bl.slice(1)+" first.";
+  else s=costStr(c);
+  if(n&&d.prod){
+   const f=RATE[d.id]===undefined?1:RATE[d.id];
+   const outs=Object.keys(d.prod.out).map(k=>"+"+fmt(d.prod.out[k]*n*(d.m?M[d.m]:1)*f)+" "+NAMES[k]+"/s").join(", ");
+   s+=" · "+outs;
+   if(IDLE[d.id])s+=" — "+IDLE[d.id];
+  }
+  if(n&&d.leg)s+=" · upkeep "+money(n*800)+"/s";
+  cp.innerHTML=bl?'<b>'+s+'</b>':s.replace(/— (.+)$/,'<span class="warn">— $1</span>');
+ });
+ return b;
+}
+function actEl(a){
+ const b=document.createElement("button");b.className="act";
+ b.innerHTML='<span class="an"></span><span class="ax"></span><span class="fill"></span>';
+ b.querySelector(".an").textContent=a.n;
+ const ax=b.querySelector(".ax");
+ b.onclick=()=>{
+  if(b.classList.contains("cool"))return;
+  if(a.in&&!has(a.in)){floatUp(b,"nothing to use","var(--minium)");return}
+  if(a.in)pay(a.in);
+  let txt=[],jack=0;
+  if(!a.in&&Math.random()<.055)jack=rnd(12,34);
+  for(const k in a.out){
+   const v=a.out[k]*(a.m?M[a.m]:1)*(jack||1);
+   const before=S.r[k];gain(k,v);
+   const got=k==="denarii"?v:S.r[k]-before;
+   if(got>0.01)txt.push("+"+fmt(got)+" "+NAMES[k]);
+   else txt.push("full");
+  }
+  if(jack){
+   const finds=["A jar of black coins under the third furrow. Somebody buried it and never came back.",
+    "The old boundary stone shifts and there is a hoard behind it.",
+    "A hollow in the trunk, packed with wild honeycomb and older than you are.",
+    "You cut into the bank and a whole seam of it comes away at once.",
+    "The plough turns up a shrine nobody has visited in a hundred years, and what was left on it."];
+   if(Math.random()<.4)gain("denarii",Math.round(rnd(60,400)*(1+S.rank*6)));
+   log(pick(finds),"hi");
+   sfx("jackpot");buzz([12,40,12,40,20]);
+   b.classList.remove("jack");void b.offsetWidth;b.classList.add("jack");
+   floatUp(b,"★ "+txt.join(" "),"var(--ochre)");
+  }else floatUp(b,txt.join(" "),txt[0]==="full"?"var(--minium)":null);
+  buzz(6);if(!jack)sfx(txt[0]==="full"?"bad":"work");
+  b.classList.remove("hit");void b.offsetWidth;b.classList.add("hit");
+  const cd=a.cd*M.cd;
+  b.classList.add("cool");b.style.setProperty("--cd",cd+"s");
+  setTimeout(()=>b.classList.remove("cool"),cd*1000);
+ };
+ UPD.push(()=>{
+  let s="";
+  if(a.in)s+=Object.keys(a.in).map(k=>a.in[k]+" "+NAMES[k]).join(", ")+" → ";
+  s+=Object.keys(a.out).map(k=>"+"+fmt(a.out[k]*(a.m?M[a.m]:1))+" "+NAMES[k]).join(", ");
+  if(M.cd<.999)s+=" · "+(a.cd*M.cd).toFixed(1)+"s";
+  ax.textContent=s;
+  b.classList.toggle("no",!!(a.in&&!has(a.in)));
+ });
+ return b;
+}
+function ascendEl(){
+ const nx=RANKS[S.rank].next;if(!nx)return null;
+ const w=document.createElement("div");w.className="ascend";
+ w.innerHTML='<h3>Next station</h3><p></p><div class="reqs"></div>';
+ w.querySelector("p").textContent=nx.march
+  ? "Eight legions and five provinces answer to you. Rome does not."
+  : "What stands between you and "+nx.ttl+":";
+ const rq=w.querySelector(".reqs");
+ const btn=document.createElement("button");btn.className="big"+(nx.march?" danger":"");
+ btn.textContent=nx.btn;btn.onclick=()=>{buzz(10);ascend()};
+ w.appendChild(btn);
+ UPD.push(()=>{
+  const l=reqList();
+  rq.innerHTML=l.map(x=>'<div class="req'+(x.h>=x.n?" ok":"")+'"><span>'+x.t+'</span><span>'+fmt(Math.min(x.h,x.n))+" / "+fmt(x.n)+'</span></div>').join("");
+  const ok=canAscend();
+  btn.disabled=!ok;
+ });
+ return w;
+}
+function ventEl(v){
+ const wrap=document.createElement("div");wrap.className="card";
+ wrap.innerHTML='<div class="crow"><span class="cn"></span><span class="cc"></span></div>'+
+  '<div class="cd"></div><div class="cp"></div>';
+ wrap.querySelector(".cn").textContent=v.n;
+ wrap.querySelector(".cd").textContent=v.d;
+ const cc=wrap.querySelector(".cc"),cp=wrap.querySelector(".cp");
+ wrap.onclick=()=>{if(!S.voy[v.id]){buzz(8);startVoy(v)}};
+ let auto=null;
+ if(S.b.factor){
+  const row=document.createElement("div");row.className="mrow";row.style.marginTop="8px";
+  row.innerHTML='<span class="mn">Factor runs this one<b>he keeps a quarter</b></span>';
+  auto=document.createElement("button");auto.className="wide";
+  auto.onclick=(e)=>{if(e&&e.stopPropagation)e.stopPropagation();
+   S.auto[v.id]=!S.auto[v.id];sfx("tap");buzz(5);render()};
+  row.appendChild(auto);wrap.appendChild(row);
+ }
+ UPD.push(()=>{
+  const run=S.voy[v.id];
+  if(auto){auto.textContent=S.auto[v.id]?"ON":"OFF";auto.classList.toggle("off",!S.auto[v.id])}
+  if(run){
+   cc.textContent=Math.ceil(run.t)+"s";
+   cp.innerHTML='<span class="good">at sea…</span>';
+   wrap.classList.remove("can");wrap.classList.add("no");
+  }else{
+   const need=v.need&&!(S.b[v.need]||0);
+   cc.textContent=Math.round(v.risk*M.risk*100)+"% risk · "+Math.round(v.t*M.fast)+"s";
+   cp.textContent=need?("Requires a "+BID[v.need].n.toLowerCase()):
+    (costStr(v.c)+" → "+Object.keys(v.out).map(k=>amount(k,v.out[k]*M.venture)).join(", "));
+   const ok=!need&&has(v.c)&&Object.keys(S.voy).length<M.slots;
+   wrap.classList.toggle("can",ok);wrap.classList.toggle("no",!ok);
+  }
+ });
+ return wrap;
+}
+function marketEl(){
+ const w=document.createElement("div");
+ const ks=MATS.filter(k=>PRICE[k]&&(S.seen[k]||S.r[k]>0));
+ if(!ks.length){w.appendChild(note("Nothing to sell yet."));return w}
+ ks.forEach(k=>{
+  const row=document.createElement("div");row.className="mrow";
+  const lab=document.createElement("span");lab.className="mn";
+  row.appendChild(lab);
+  const mk=(txt,qty)=>{
+   const b=document.createElement("button");b.textContent=txt;
+   b.onclick=()=>{
+    const q=qty==="max"?Math.floor(S.r[k]):qty;
+    const v=sellRes(k,q);
+    if(v>0){sfx("coin");buzz(6);floatUp(b,"+"+fmt(v));}
+   };
+   row.appendChild(b);return b;
+  };
+  const b1=mk("1",1),b10=mk("10",10),bm=mk("all","max");bm.className="wide";
+  UPD.push(()=>{
+   const price=PRICE[k]*M.sell;
+   lab.innerHTML="";
+   const t=document.createElement("span");t.textContent=NAMES[k]+" "+fmt(S.r[k]);
+   const sub=document.createElement("b");sub.textContent=money(price)+" each";
+   lab.appendChild(t);lab.appendChild(sub);
+   const any=S.r[k]>=1;
+   [b1,b10,bm].forEach(b=>b.classList.toggle("off",!any));
+  });
+  w.appendChild(row);
+ });
+ return w;
+}
+function quickSell(){
+ let total=0,any=false;
+ for(const k in PRICE){
+  const q=Math.floor(S.r[k]);
+  if(q<=0)continue;
+  S.r[k]-=q;total+=q*PRICE[k]*M.sell*.9;any=true;
+ }
+ if(!any)return 0;
+ gain("denarii",total);
+ return total;
+}
+function quickSellEl(){
+ const b=document.createElement("button");b.className="quick";
+ b.innerHTML='<span></span><b>The pedlar takes a tenth for the trouble</b>';
+ const lab=b.querySelector("span");
+ b.onclick=()=>{
+  const v=quickSell();
+  if(v>0){sfx("coin");buzz([6,25,6]);floatUp(b,"+"+money(v));render()}
+ };
+ UPD.push(()=>{
+  let t=0;for(const k in PRICE)t+=Math.floor(S.r[k])*PRICE[k]*M.sell*.9;
+  lab.textContent=t>0?("Sell everything to the pedlar — "+money(t)):"Nothing in the store to sell";
+  b.style.opacity=t>0?1:.45;
+ });
+ return b;
+}
+function ledgerEl(){
+ const w=document.createElement("div");
+ const box=document.createElement("div");w.appendChild(box);
+ UPD.push(()=>{
+  const L=ledger();
+  let h="";
+  L.rows.forEach(r=>{h+='<div class="led'+(r[1]<0?" neg":"")+'"><span>'+r[0]+'</span><i>'+(r[1]<0?"−":"+")+money(Math.abs(r[1]))+'/s</i></div>'});
+  h+='<div class="led tot"><span>Net income</span><i>'+(L.net<0?"−":"+")+money(Math.abs(L.net))+'/s</i></div>';
+  const chains=["grain","flour","bread","olives","oil"].filter(k=>S.seen[k]);
+  if(chains.length){
+   h+='<div class="led tot"><span>Supply</span><i></i></div>';
+   chains.forEach(k=>{
+    const f=flow(k),net=f.prod-f.cons;
+    h+='<div class="led'+(net<-1e-6?" neg":"")+'"><span>'+NAMES[k]+'</span><i>'+fmt(f.prod)+" made · "+fmt(f.cons)+" used"+'</i></div>';
+   });
+  }
+  box.innerHTML=h;
+ });
+ return w;
+}
+function tavernEl(){
+ const w=document.createElement("div");
+ const pickRow=document.createElement("div");pickRow.className="mrow";
+ pickRow.innerHTML='<span class="mn">Your stake<b></b></span>';
+ const sub=pickRow.querySelector("b");
+ const btns=stakeSizes().map((sz,i)=>{
+  const b=document.createElement("button");b.className="wide";b.textContent=sz[0];
+  b.onclick=()=>{stakeIx=i;sfx("tap");render()};
+  pickRow.appendChild(b);return b;
+ });
+ w.appendChild(pickRow);
+ const res=document.createElement("div");res.className="dice";res.textContent="· · · ·";
+ const tali=document.createElement("button");tali.className="card can";
+ tali.innerHTML='<div class="crow"><span class="cn">Throw the tali</span><span class="cc"></span></div>'+
+  '<div class="cd">Four knucklebones. All four different is the Venus and pays five to one; four alike pays fourteen; three alike returns half again. Four ones are the dogs.</div><div class="cp"></div>';
+ const tcc=tali.querySelector(".cc"),tcp=tali.querySelector(".cp");
+ tali.onclick=()=>{
+  const st=stakeSizes()[stakeIx][1];
+  if(S.r.denarii<st)return;
+  const name=throwTali(st);buzz([6,30,6]);
+  res.textContent=name||"";
+  tali.classList.remove("hit");void tali.offsetWidth;tali.classList.add("hit");
+  render();
+ };
+ w.appendChild(tali);w.appendChild(res);
+ if(S.rank>=3){
+  w.appendChild(sec("The races"));
+  FACTIONS.forEach((f,i)=>{
+   const row=document.createElement("div");row.className="mrow";
+   const lab=document.createElement("span");lab.className="mn";
+   lab.innerHTML='<span>'+f[0]+'</span><b>'+f[1]+' — pays '+[2.6,3.2,4.4,6.0][i]+'×</b>';
+   row.appendChild(lab);
+   const b=document.createElement("button");b.className="wide";b.textContent="bet";
+   b.onclick=()=>{const st=stakeSizes()[stakeIx][1];if(S.r.denarii<st)return;
+    betRace(i,st);buzz(7);render()};
+   row.appendChild(b);w.appendChild(row);
+  });
+ }
+ UPD.push(()=>{
+  const sz=stakeSizes();
+  sub.textContent=money(sz[stakeIx][1]);
+  btns.forEach((b,i)=>b.classList.toggle("off",i!==stakeIx));
+  tcc.textContent=fmt(sz[stakeIx][1]);
+  tcp.textContent=S.b.loaded?"Your own tali. Nobody has asked to inspect them.":"";
+ });
+ return w;
+}
+function pathsEl(){
+ const w=document.createElement("div");
+ w.appendChild(note("There is more than one road to the purple. The legions are the shortest and the bloodiest. The others take longer and are remembered differently."));
+ PATHS.filter(pth=>!pth.hidden).forEach(pth=>{
+  const c=document.createElement("div");c.className="card path";
+  c.innerHTML='<div class="crow"><span class="cn"></span><span class="tag"></span></div><div class="cd"></div><div class="reqs"></div>';
+  c.querySelector(".cn").textContent=pth.n;
+  c.querySelector(".tag").textContent=pth.tag;
+  c.querySelector(".cd").textContent=pth.d;
+  const rq=c.querySelector(".reqs");
+  if(pth.steps){
+   pth.steps.forEach((st,i)=>{
+    const b=document.createElement("button");b.className="card";b.style.margin="7px 0 0";
+    b.innerHTML='<div class="crow"><span class="cn"></span><span class="cc"></span></div>';
+    b.querySelector(".cn").textContent=st.n;
+    const cc=b.querySelector(".cc");
+    b.onclick=()=>{
+     if((S.pstep[pth.id]||0)!==i)return;
+     if(!has(st.c))return;
+     pay(st.c);S.pstep[pth.id]=i+1;sfx("buy");buzz(9);
+     log(st.n+" — done, and not cheaply.","hi");render();
+    };
+    UPD.push(()=>{
+     const done=(S.pstep[pth.id]||0)>i,turn=(S.pstep[pth.id]||0)===i;
+     cc.textContent=done?"done":money(st.c.denarii);
+     b.classList.toggle("can",turn&&has(st.c));
+     b.classList.toggle("no",done||!turn||!has(st.c));
+    });
+    c.appendChild(b);
+   });
+  }
+  const go=document.createElement("button");go.className="big";go.style.marginTop="10px";
+  go.textContent="Take this road";
+  go.onclick=()=>{sfx("tap");buzz(10);attemptPath(pth)};
+  c.appendChild(go);
+  UPD.push(()=>{
+   const l=pathReq(pth),ok=l.every(x=>x.h>=x.n);
+   rq.innerHTML=l.map(x=>'<div class="req'+(x.h>=x.n?" ok":"")+'"><span>'+x.t+'</span><span>'+fmt(Math.min(x.h,x.n))+" / "+fmt(x.n)+'</span></div>').join("");
+   go.disabled=!ok;
+   go.textContent=ok?("Take this road — "+Math.round(pth.odds()*100)+"%"):"Not yet";
+   const h=clamp((pth.hold||1)*(1-foundation()*.45),.45,2.2);
+   const w=h<.72?"unshakeable":h<.95?"solid":h<1.2?"workable":h<1.5?"precarious":"by your fingertips";
+   c.querySelector(".tag").textContent=pth.tag+" · hold: "+w;
+   c.classList.toggle("ready",ok);
+  });
+  w.appendChild(c);
+ });
+ return w;
+}
+function declineEl(){
+ const w=document.createElement("div");
+ const box=document.createElement("div");w.appendChild(box);
+ UPD.push(()=>{
+  const f=fama();
+  let h='<div class="led"><span>Invasions and usurpers survived</span><i>'+S.waves+'</i></div>';
+  h+='<div class="led"><span>Pressure on the frontier</span><i>'+fmt(waveStrength())+'</i></div>';
+  h+='<div class="led"><span>Provinces still yours</span><i>'+provList().length+' of '+PROV.length+'</i></div>';
+  h+='<div class="led tot"><span>Fama</span><i>'+fmt(f)+'</i></div>';
+  if(BEST)h+='<div class="led"><span>Your best</span><i>'+fmt(BEST)+'</i></div>';
+  box.innerHTML=h;
+ });
+ return w;
+}
+function romeActs(){
+ const wrap=document.createElement("div");
+ const acts=[
+  {id:"games",n:"Sponsor public games",cost:()=>Math.round(20000*Math.pow(1.15,S.plebs/3)*Math.pow(1.07,S.games)),
+   d:"Beasts, blood and free seats.",f:()=>{S.games++;S.plebs=clamp(S.plebs+9*M.games,0,100);S.dig+=180*M.games/(1+S.games*.05);log("The crowd chants your name for three days.","gd")}},
+  {id:"dole",n:"Distribute grain",gr:2000,d:"Free bread for the tribes.",
+   f:()=>{S.doles++;S.plebs=clamp(S.plebs+6,0,100);S.dig+=40;log("Queues from the Aventine to the river.","gd")}},
+  {id:"lot",n:"Draw a province by lot",cost:()=>600000,need:()=>S.rank>=6&&S.senate>=55&&PROV.some(p=>!S.prov[p.id]&&p.df<=620),
+   d:"Praetors are assigned provinces by lot. Lots can be influenced.",f:()=>{
+    const opts=PROV.filter(p=>!S.prov[p.id]&&p.df<=620);
+    if(!opts.length){log("There is nothing quiet left to govern.","bad");return}
+    const p=pick(opts);S.prov[p.id]=1;S.senate=clamp(S.senate-4,0,100);S.dig+=200;
+    log(p.n+" is yours to govern, and no one had to die for it.","gd")}},
+  {id:"court",n:"Court the Senate",cost:()=>Math.round(40000*Math.pow(1.12,S.senate/3)),
+   d:"Dinners, loans, and marriages arranged.",f:()=>{
+    if(Math.random()<.14){S.dig=Math.max(0,S.dig-200);S.plebs=clamp(S.plebs-5,0,100);log("Word of the bribes got out.","bad")}
+    else{S.senate=clamp(S.senate+7,0,100);log("Three more houses will vote with you.","gd")}}}
+ ];
+ acts.forEach(a=>{
+  if(a.need&&!a.need())return;
+  const b=document.createElement("button");b.className="card";
+  b.innerHTML='<div class="crow"><span class="cn"></span><span class="cc"></span></div><div class="cd"></div><div class="cp"></div>';
+  b.querySelector(".cn").textContent=a.n;b.querySelector(".cd").textContent=a.d;
+  const cp=b.querySelector(".cp");
+  b.onclick=()=>{
+   if(a.gr){if(S.r.grain<a.gr)return;S.r.grain-=a.gr}
+   else{const c=a.cost();if(S.r.denarii<c)return;S.r.denarii-=c}
+   buzz(9);sfx("buy");b.classList.remove("hit");void b.offsetWidth;b.classList.add("hit");
+   a.f();floatUp(b,a.n.split(" ")[0]);render();
+  };
+  UPD.push(()=>{
+   const c=a.gr?a.gr:a.cost();
+   const ok=a.gr?S.r.grain>=c:S.r.denarii>=c;
+   cp.textContent=a.gr?(fmt(c)+" grain"):money(c);
+   b.classList.toggle("can",ok);b.classList.toggle("no",!ok);
+  });
+  wrap.appendChild(b);
+ });
+ return wrap;
+}
+function campaignEl(){
+ const wrap=document.createElement("div");
+ if(S.camp){
+  const p=PID[S.camp.p],b=document.createElement("div");b.className="card idle";
+  b.innerHTML='<div class="crow"><span class="cn">Campaign in '+p.n+'</span><span class="cc"></span></div><div class="cd">'+fmt(S.camp.n)+' legions in the field. Odds '+Math.round(S.camp.o*100)+'%.</div>';
+  const cc=b.querySelector(".cc");
+  UPD.push(()=>{cc.textContent=Math.ceil(S.camp?S.camp.t:0)+"s"});
+  wrap.appendChild(b);
+  return wrap;
+ }
+ PROV.forEach(p=>{
+  if(S.prov[p.id])return;
+  const b=document.createElement("button");b.className="card";
+  b.innerHTML='<div class="crow"><span class="cn"></span><span class="cc"></span></div><div class="cd"></div><div class="cp"></div>';
+  b.querySelector(".cn").textContent=p.n;b.querySelector(".cd").textContent=p.d;
+  const cc=b.querySelector(".cc"),cp=b.querySelector(".cp");
+  b.onclick=()=>{
+   if(!S.legions){log("You have no legions.","bad");return}
+   let n=S.legions;
+   const box=document.createElement("div");box.className="stepper";
+   box.innerHTML='<button>−</button><span></span><button>+</button>';
+   const lbl=box.querySelector("span"),bs=box.querySelectorAll("button");
+   const upd=()=>{lbl.textContent=n+" legion"+(n>1?"s":"")+" · "+Math.round(odds(n,p)*100)+"% to win"};
+   bs[0].onclick=()=>{n=Math.max(1,n-1);upd()};
+   bs[1].onclick=()=>{n=Math.min(S.legions,n+1);upd()};
+   upd();
+   modal({h:"Campaign: "+p.n,p:"Defence strength "+fmt(p.df)+". Defeat costs legions, popularity and the Senate's patience.",extra:box,
+    ch:[{n:"March",e:"",f:()=>startCamp(p,n)},{n:"Not yet",e:"",f:()=>{}}]});
+  };
+  UPD.push(()=>{
+   const o=S.legions?Math.round(odds(S.legions,p)*100):0;
+   cc.textContent=S.legions?o+"%":"no army";
+   const yields=Object.keys(p.r).map(k=>"+"+p.r[k]+" "+NAMES[k]+"/s").concat(["+"+money(p.den)+"/s"]).join(", ");
+   cp.textContent=yields;
+   b.classList.toggle("can",S.legions>0&&o>=40);
+   b.classList.toggle("no",!S.legions);
+  });
+  wrap.appendChild(b);
+ });
+ return wrap;
+}
+function palaceEl(){
+ const wrap=document.createElement("div");
+ const acts=[
+  {n:"Donative to the guard",c:4000000,d:"Silver in every praetorian's hand.",f:()=>{S.loyalty=clamp(S.loyalty+14,0,100);S.consp=clamp(S.consp-10,0,100);log("The guard salutes rather more warmly.","gd")}},
+  {n:"Games in the arena",c:()=>Math.round(6000000*Math.pow(1.05,S.games)),d:"A hundred days of spectacle.",f:()=>{S.games++;S.plebs=clamp(S.plebs+14*M.games,0,100);S.consp=clamp(S.consp-6,0,100);log("Rome is delighted with you.","gd")}},
+  {n:"Sit with the Senate",c:0,d:"Attend as a citizen. Costs nothing but pride.",f:()=>{S.senate=clamp(S.senate+5,0,100);S.consp=clamp(S.consp-5,0,100);S.dig=Math.max(0,S.dig-50);log("You let a consul contradict you in public.")},cd:true},
+  {n:"Purge the suspects",c:0,d:"Names, arrests, silence.",f:()=>{S.consp=clamp(S.consp-22,0,100);S.senate=clamp(S.senate-14,0,100);S.purges++;log("The lists are read out at dawn.","bad")},cd:true},
+  {n:"Name an heir",c:0,d:"An adopted son ends the argument about what comes after you.",f:()=>{S.heir=true;S.consp=clamp(S.consp-12,0,100);S.senate=clamp(S.senate+4,0,100);log("The succession is settled.","gd")},once:()=>S.heir}
+ ];
+ acts.forEach(a=>{
+  if(a.once&&a.once())return;
+  const b=document.createElement("button");b.className="card";
+  b.innerHTML='<div class="crow"><span class="cn"></span><span class="cc"></span></div><div class="cd"></div><div class="cp"></div>';
+  b.querySelector(".cn").textContent=a.n;b.querySelector(".cd").textContent=a.d;
+  const cp=b.querySelector(".cp");
+  const cst=()=>typeof a.c==="function"?a.c():a.c;
+  b.onclick=()=>{const c=cst();if(c&&S.r.denarii<c)return;if(c)S.r.denarii-=c;buzz(9);sfx("buy");
+   b.classList.remove("hit");void b.offsetWidth;b.classList.add("hit");a.f();render()};
+  UPD.push(()=>{const c=cst();cp.textContent=c?money(c):"no cost";
+   const ok=!c||S.r.denarii>=c;b.classList.toggle("can",ok);b.classList.toggle("no",!ok)});
+  wrap.appendChild(b);
+ });
+ wrap.appendChild(sec("Monuments"));
+ WON.forEach(w=>{
+  const b=document.createElement("button");b.className="card";
+  b.innerHTML='<div class="crow"><span class="cn"></span><span class="cc"></span></div><div class="cd"></div><div class="cp"></div>';
+  b.querySelector(".cn").textContent=w.n;b.querySelector(".cd").textContent=w.d;
+  const cc=b.querySelector(".cc"),cp=b.querySelector(".cp");
+  b.onclick=()=>{
+   if(S.won[w.id]||!has(w.c))return;
+   pay(w.c);S.won[w.id]=1;
+   for(const k in w.e)k==="dig"?S.dig+=w.e[k]:S[k]=clamp(S[k]+w.e[k],0,100);
+   buzz([10,30,10]);sfx("good");b.classList.remove("hit");void b.offsetWidth;b.classList.add("hit");
+   log(w.n+" is finished.","hi");
+   if(w.id==="palace")startDecline();
+   checkVictory();render();
+  };
+  UPD.push(()=>{
+   const done=!!S.won[w.id];
+   cc.textContent=done?"built":"";
+   cp.textContent=done?"Standing.":costStr(w.c);
+   b.classList.toggle("can",!done&&has(w.c));b.classList.toggle("no",done||!has(w.c));
+  });
+  wrap.appendChild(b);
+ });
+ return wrap;
+}
+
+function render(){
+ buildTabs();
+ UPD=[];
+ const v=$("#view");v.scrollTop=v.scrollTop;const keep=v.scrollTop;
+ v.innerHTML="";
+ const t=S.tab;
+ [...$("#tabs").children].forEach(b=>b.classList.toggle("on",b.dataset.tab===t));
+
+ const asc=RANKS[S.rank].next;
+ const ascTabs=S.rank<=1?["work","build"]:S.rank===2?["trade","build"]:S.rank<=6?["rome"]:["war"];
+ if(S.rank>=7&&S.rank<9&&t==="paths"){}
+ if(asc&&ascTabs.indexOf(t)>=0){const e=ascendEl();if(e)v.appendChild(e)}
+
+ if(t==="work"){
+  const acts=ACT.filter(a=>!a.need||(S.b[a.need]||0)>0);
+  v.appendChild(sec("Quick sell"));
+  v.appendChild(quickSellEl());
+  v.appendChild(sec("By your own hands"));
+  const g=document.createElement("div");g.className="acts";
+  acts.forEach(a=>g.appendChild(actEl(a)));
+  v.appendChild(g);
+  const gw=document.createElement("div");gw.className="note";
+  v.appendChild(sec("The lane"));v.appendChild(gw);
+  UPD.push(()=>{
+   let t=S.goodwill>=75?"The lane thinks well of you. Things keep turning up by your door.":
+    S.goodwill>=45?"You are on nodding terms with the neighbours.":
+    S.goodwill>=25?"The neighbours have noticed you never give anything back.":
+    "Nobody on this lane will lift a finger for you.";
+   if(S.shun)t+=" You have turned "+S.shun+" of them away for good — everything you make you keep, and it shows ("+
+    Math.round((M.ruthless-1)*100)+"% more from every pair of hands).";
+   gw.textContent=t;
+  });
+  if(!(S.b.handmill||0))v.appendChild(note("Raw grain fetches almost nothing. Bread is worth five times as much. You will need a quern and an oven."));
+ }
+ if(t==="build"){
+  v.appendChild(sec("The market"));
+  v.appendChild(note("No queue, no waiting. Sell whatever you have, in ones, tens or the lot."));
+  v.appendChild(quickSellEl());
+  v.appendChild(marketEl());
+  const own=B.filter(d=>d.t==="build"&&S.rank>=d.r&&!d.mm);
+  const ups=B.filter(d=>d.t==="build"&&S.rank>=d.r&&d.mm);
+  v.appendChild(sec("Land and labour"));
+  own.forEach(d=>{if(!(d.max&&(S.b[d.id]||0)>=d.max)||d.max>1)v.appendChild(cardEl(d))});
+  v.appendChild(sec("Improvements"));
+  ups.forEach(d=>{if(!(S.b[d.id]||0))v.appendChild(cardEl(d))});
+  if(ups.every(d=>S.b[d.id]))v.appendChild(note("Nothing left to improve here."));
+ }
+ if(t==="trade"){
+  v.appendChild(sec("Ventures ("+Object.keys(S.voy).length+" of "+M.slots+" out)"));
+  VENT.filter(x=>S.rank>=x.r&&!(x.hide&&S.rank>=x.hide)).forEach(x=>v.appendChild(ventEl(x)));
+  v.appendChild(sec("Ships and men"));
+  B.filter(d=>d.t==="trade"&&S.rank>=d.r).forEach(d=>v.appendChild(cardEl(d)));
+ }
+ if(t==="paths"){
+  v.appendChild(sec("Roads to the purple"));
+  v.appendChild(pathsEl());
+ }
+ if(t==="rome"){
+  v.appendChild(sec("Influence"));
+  v.appendChild(romeActs());
+
+  v.appendChild(sec("Patronage"));
+  B.filter(d=>d.t==="rome"&&S.rank>=d.r).forEach(d=>{if(!(d.max===1&&S.b[d.id]))v.appendChild(cardEl(d))});
+ }
+ if(t==="war"){
+  v.appendChild(sec("The army"));
+  B.filter(d=>d.t==="war"&&S.rank>=d.r).forEach(d=>v.appendChild(cardEl(d)));
+  v.appendChild(sec(S.camp?"In the field":"Provinces"));
+  v.appendChild(campaignEl());
+  const held=provList();
+  if(held.length){
+   v.appendChild(sec("Held"));
+   const d=document.createElement("div");d.className="note";
+   d.textContent=held.map(x=>PID[x].n).join(" · ");
+   v.appendChild(d);
+  }
+ }
+ if(t==="palace"){
+  v.appendChild(sec("Reign of "+Math.floor(S.reign/22)+" years"));
+  if(S.decline){v.appendChild(declineEl());v.appendChild(sec("Holding it"))}
+  v.appendChild(palaceEl());
+  if(!S.decline){v.appendChild(sec("Legacy"));v.appendChild(declineEl())}
+ }
+ if(drawerSec)drawerBody();
+ UPD.forEach(f=>f());
+ head();
+ v.scrollTop=keep;
+}
+
+/* ============================ persistence ============================ */
+let saveT=0;
+async function save(){
+ try{if(window.storage)await window.storage.set("roma:save",JSON.stringify(S))}catch(e){}
+}
+async function load(){
+ try{
+  if(!window.storage)return false;
+  const r=await window.storage.get("roma:save");
+  if(r&&r.value){const o=JSON.parse(r.value);if(o&&o.v===1){S=Object.assign(fresh(),o);return true}}
+ }catch(e){}
+ return false;
+}
+
+/* ============================ loop ============================ */
+let last=performance.now(),acc=0;
+function loop(now){
+ const dt=Math.min(.25,(now-last)/1000);last=now;
+ tick(dt);
+ acc+=dt;
+ if(acc>.2){acc=0;UPD.forEach(f=>f());head()}
+ saveT+=dt;if(saveT>12){saveT=0;save()}
+ requestAnimationFrame(loop);
+}
+
+function drawWreath(){
+ const w=$("#wreath");if(!w)return;
+ const NS="http://www.w3.org/2000/svg";
+ let out="";
+ for(let side=-1;side<=1;side+=2){
+  let pts=[];
+  for(let i=0;i<=12;i++){
+   const t=i/12,a=Math.PI*(1.06+t*.66);
+   const x=120+side*78*Math.abs(Math.cos(a)),y=104+78*Math.sin(a)*.92;
+   pts.push([x,y]);
+  }
+  out+='<path d="M'+pts.map(p=>p[0].toFixed(1)+" "+p[1].toFixed(1)).join(" L")+'" fill="none" stroke="#7a6a4a" stroke-width="1.1" opacity=".5"/>';
+  pts.forEach((p,i)=>{
+   if(i===0)return;
+   const prev=pts[i-1];
+   const ang=Math.atan2(p[1]-prev[1],p[0]-prev[0])*180/Math.PI;
+   const sz=1-Math.abs(i-6)/14;
+   out+='<ellipse cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" rx="'+(11*sz).toFixed(1)+'" ry="'+(3.6*sz).toFixed(1)+
+    '" transform="rotate('+(ang+side*26).toFixed(0)+' '+p[0].toFixed(1)+' '+p[1].toFixed(1)+')" fill="#c99b47" opacity="'+(.35+sz*.5).toFixed(2)+'"/>';
+  });
+ }
+ out+='<circle cx="120" cy="30" r="2.6" fill="#c99b47" opacity=".75"/>';
+ w.innerHTML=out;
+}
+
+/* ============================ boot ============================ */
+(async function(){
+ const loaded=await load();
+ recompute();
+ if(!loaded){
+  log("A field, a hut, and nothing else.");
+  log("Cut wheat. It is what there is.");
+ }else log("You take up where you left off.");
+ try{if(window.storage){const r=await window.storage.get("roma:best");if(r&&r.value)BEST=+r.value||0}}catch(e){}
+ render();
+ document.addEventListener("pointerdown",e=>{audioInit();ringAt(e.clientX,e.clientY)},{passive:true});
+ $("#menu").onclick=()=>openDrawer(drawerSec);
+ $("#dclose").onclick=()=>closeDrawer();
+ $("#drawer").onclick=e=>{if(e.target&&e.target.id==="drawer")closeDrawer()};
+ $("#year").onclick=()=>openDrawer("legacy");
+ drawWreath();
+ const st=$("#start");
+ if(loaded&&S.rank>0){st.textContent="Continue";
+  document.querySelector(".tpos").innerHTML="You left off as "+RANKS[S.rank].l.toLowerCase()+", in the year "+year()+".<br><br>Rome is where you left it.";}
+ if(BEST)$("#tbest").textContent="Best fama · "+fmt(BEST);
+ st.onclick=()=>{
+  audioInit();musicStart();sfx("choir");buzz([10,40,10]);
+  const T=$("#title");T.classList.add("gone");
+  setTimeout(()=>{T.style.display="none"},760);
+  last=performance.now();
+  requestAnimationFrame(loop);
+ };
+ document.addEventListener("visibilitychange",()=>{
+  if(document.hidden){save();musicStop()}
+  else{last=performance.now();if(MUSIC)musicStart()}
+ });
+})();
+</script>
+</body>
+</html>
